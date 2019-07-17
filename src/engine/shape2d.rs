@@ -2,8 +2,8 @@ use wgpu;
 use crate::engine::{ShaderStage, load_glsl};
 
 pub struct Pipeline {
-    bind_group: wgpu::BindGroup,
-    render_pipeline: wgpu::RenderPipeline,
+   pub bind_group: wgpu::BindGroup, 
+   pub render_pipeline: wgpu::RenderPipeline,
 }
 
 impl Pipeline {

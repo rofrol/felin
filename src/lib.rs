@@ -15,11 +15,7 @@ pub use wgpu;
 pub use engine::shape2d;
 
 
-pub struct App {
-    bind_group: Option<wgpu::BindGroup>,
-    uniform_buf: Option<wgpu::Buffer>,
-    pipeline: Option<wgpu::RenderPipeline>,
-}
+pub struct App;
 
 impl App {
     pub fn new<E: Base>(title: &str) -> App {
@@ -129,11 +125,7 @@ impl App {
             running &= !cfg!(feature = "metal-auto-capture");
         }
 
-        App {
-           bind_group: None,
-           uniform_buf: None,
-           pipeline: None,
-        }
+        App {}
     }
 }
 
