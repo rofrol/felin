@@ -12,6 +12,7 @@ use wgpu::winit::{
 };
 
 pub use wgpu;
+pub use engine::shape2d;
 
 
 pub struct App {
