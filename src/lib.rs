@@ -13,7 +13,7 @@ use wgpu::winit::{
 
 pub use wgpu;
 pub use engine::shape2d;
-
+pub use engine::shapes;
 
 pub struct App;
 

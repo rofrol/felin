@@ -1,6 +1,7 @@
 use log::info;
 
 pub mod shape2d;
+pub mod shapes;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
