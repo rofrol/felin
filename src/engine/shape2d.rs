@@ -1,5 +1,24 @@
 use wgpu;
+use cgmath::{Matrix4};
 use crate::engine::{ShaderStage, load_glsl};
+
+
+///////////////////////////////////////////////////////////////////////////
+// Uniforms
+///////////////////////////////////////////////////////////////////////////
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct Uniforms {
+    pub ortho: Matrix4<f32>,
+    pub transform: Matrix4<f32>,
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Pipeline
+///////////////////////////////////////////////////////////////////////////
+
 
 pub struct Pipeline {
    pub bind_group: wgpu::BindGroup, 
@@ -8,6 +27,7 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn new(device: &wgpu::Device) -> Pipeline {
+
         let bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor { bindings: &[] }
         );
@@ -17,14 +37,12 @@ impl Pipeline {
             bindings: &[],
         });
 
-
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-
-        let vs_bytes = load_glsl(include_str!("shaders/basic.glsl.vert"), ShaderStage::Vertex);
-        let fs_bytes = load_glsl(include_str!("shaders/basic.glsl.frag"), ShaderStage::Fragment);
+        let vs_bytes = load_glsl(include_str!("shaders/shader2.vert"), ShaderStage::Vertex);
+        let fs_bytes = load_glsl(include_str!("shaders/shader2.frag"), ShaderStage::Fragment);
 
         let vs_module = device.create_shader_module(&vs_bytes);
         let fs_module = device.create_shader_module(&fs_bytes);
@@ -41,7 +59,7 @@ impl Pipeline {
             }),
             rasterization_state: wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
+                cull_mode: wgpu::CullMode::None,
                 depth_bias: 0,
                 depth_bias_slope_scale: 0.0,
                 depth_bias_clamp: 0.0,
@@ -55,8 +73,8 @@ impl Pipeline {
             }],
             depth_stencil_state: None,
             index_format: wgpu::IndexFormat::Uint16,
-            vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: 8,
+              vertex_buffers: &[wgpu::VertexBufferDescriptor {
+                stride: 2,
                 step_mode: wgpu::InputStepMode::Vertex,
                 attributes: &[
                     wgpu::VertexAttributeDescriptor {
@@ -80,3 +98,4 @@ impl Pipeline {
         }
     }
 }
+
