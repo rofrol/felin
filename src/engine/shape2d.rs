@@ -1,7 +1,7 @@
 use wgpu;
 use cgmath::{Matrix4};
 use crate::engine::{ShaderStage, load_glsl};
-
+use crate::gui::definitions::Vertex;
 
 ///////////////////////////////////////////////////////////////////////////
 // Uniforms
@@ -74,17 +74,17 @@ impl Pipeline {
             depth_stencil_state: None,
             index_format: wgpu::IndexFormat::Uint16,
               vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                stride: 2,
+                stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
                 step_mode: wgpu::InputStepMode::Vertex,
                 attributes: &[
                     wgpu::VertexAttributeDescriptor {
-                        format: wgpu::VertexFormat::Float4,
+                        format: wgpu::VertexFormat::Float2,
                         offset: 0,
                         shader_location: 0,
                     },
                     wgpu::VertexAttributeDescriptor {
-                        format: wgpu::VertexFormat::Float2,
-                        offset: 4 * 4,
+                        format: wgpu::VertexFormat::Float4,
+                        offset: 2 * 4,
                         shader_location: 1,
                     },
                 ],
