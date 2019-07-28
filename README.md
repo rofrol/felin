@@ -5,14 +5,14 @@ This is an exercise repo for myself to learn how to handle vulkan and 2D graphic
 
 To try it, include master branch on your cargo
 
-```
+```rust
 [dependencies]
 engine = { git = "https://github.com/tonis2/wgpu-2d" }
 
 ```
 
 
-```
+```rust
 use engine::{Base, App, wgpu, shape2d};
 use engine::gui::definitions::*;
 
