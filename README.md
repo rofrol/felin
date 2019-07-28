@@ -7,7 +7,7 @@ To try it, include master branch on your cargo
 
 ```rust
 [dependencies.engine]
-{ git = "https://github.com/tonis2/wgpu-2d", branch = "uniformbuffer" }
+{ git = "https://github.com/tonis2/wgpu-2d", branch = "master" }
 
 ```
 
