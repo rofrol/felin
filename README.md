@@ -51,23 +51,17 @@ impl Base for Main {
                     depth_stencil_attachment: None,
                 });
 
-                let mut vertex_data = vec!();
-
-                let shape:[Vertex; 6] = [
-                        Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
-                        Vertex::new([0.0, -0.50], [0.0, 1.0, 0.0]),
-                        Vertex::new([0.0, -0.20], [0.5, 0.5, 1.0]),
-
-
-                        Vertex::new([0.50, 0.0], [1.0, 1.0, 1.0]),
-                        Vertex::new([0.0, 0.50], [0.0, 1.0, 0.0]),
-                        Vertex::new([0.0, 0.20], [0.5, 0.5, 1.0]),
-                    ];
+                let mut vertex_data = vec!(
+                                            Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
+                                            Vertex::new([0.0, -0.50], [0.0, 1.0, 0.0]),
+                                            Vertex::new([0.0, -0.20], [0.5, 0.5, 1.0]),
+                                            
+                                            Vertex::new([0.50, 0.0], [1.0, 1.0, 1.0]),
+                                            Vertex::new([0.0, 0.50], [0.0, 1.0, 0.0]),
+                                            Vertex::new([0.0, 0.20], [0.5, 0.5, 1.0]),
                 
-                for i in 0..shape.len() {
-                    vertex_data.push(shape[i]);
-                }
-
+                                           );
+                
                 let vbo = device
                     .create_buffer_mapped(vertex_data.len(), wgpu::BufferUsage::VERTEX)
                     .fill_from_slice(&vertex_data);
