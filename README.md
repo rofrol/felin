@@ -51,16 +51,14 @@ impl Base for Main {
                     depth_stencil_attachment: None,
                 });
 
-                let mut vertex_data = vec!(
-                                            Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
-                                            Vertex::new([0.0, -0.50], [0.0, 1.0, 0.0]),
-                                            Vertex::new([0.0, -0.20], [0.5, 0.5, 1.0]),
-                                            
-                                            Vertex::new([0.50, 0.0], [1.0, 1.0, 1.0]),
-                                            Vertex::new([0.0, 0.50], [0.0, 1.0, 0.0]),
-                                            Vertex::new([0.0, 0.20], [0.5, 0.5, 1.0]),
-                
-                                           );
+                 let vertex_data = vec!(
+                        Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
+                        Vertex::new([0.0, -0.50], [1.0, 1.0, 1.0]),
+                        Vertex::new([0.0, -0.20], [1.0, 1.0, 1.0]),
+                        Vertex::new([0.50, 0.0], [1.0, 1.0, 1.0]),
+                        Vertex::new([0.50, 0.8], [1.0, 1.0, 1.0]),
+                        Vertex::new([0.0, 0.20], [1.0, 1.0, 1.0]),
+                );
                 
                 let vbo = device
                     .create_buffer_mapped(vertex_data.len(), wgpu::BufferUsage::VERTEX)
