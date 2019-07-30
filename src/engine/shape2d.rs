@@ -1,19 +1,9 @@
 use wgpu;
-use cgmath::{Matrix4, Ortho};
+use cgmath;
 use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
-use crate::gui::definitions::Vertex;
+use crate::gui::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
 
-///////////////////////////////////////////////////////////////////////////
-// Uniforms
-///////////////////////////////////////////////////////////////////////////
-
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct Uniforms {
-    pub ortho: Matrix4<f32>,
-    pub transform: Matrix4<f32>,
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // Pipeline
@@ -26,21 +16,9 @@ pub struct Pipeline {
 
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
-
-        let transform: Matrix4<f32> = Matrix4::identity();
-
-        let ortho: Matrix4<f32> = Ortho::<f32> {
-                        left: 0.0,
-                        right: sc_desc.width as f32,
-                        bottom: sc_desc.height as f32,
-                        top: 0.0,
-                        near: -1.0,
-                        far: 1.0,
-                    }
-                    .into();
-
-        let mx_ref: &[f32; 16] = ortho.as_ref();
-        let mx_ref2: &[f32; 16] = transform.as_ref();             
+          
+        let mx_total = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let mx_ref: &[f32; 16] = mx_total.as_ref();
 
         let uniform_buf = device
                 .create_buffer_mapped(
@@ -49,20 +27,8 @@ impl Pipeline {
                 )
                 .fill_from_slice(mx_ref);
 
-        let uniform_buf2 = device
-            .create_buffer_mapped(
-                mx_ref2.len(),
-                wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
-            )
-            .fill_from_slice(mx_ref2);                           
-
         let bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor { bindings: &[
-                wgpu::BindGroupLayoutBinding {
-                    binding: 0,
-                    visibility: wgpu::ShaderStage::VERTEX,
-                    ty: wgpu::BindingType::UniformBuffer,
-                },
                 wgpu::BindGroupLayoutBinding {
                     binding: 0,
                     visibility: wgpu::ShaderStage::VERTEX,
@@ -78,13 +44,6 @@ impl Pipeline {
                     binding: 0,
                     resource: wgpu::BindingResource::Buffer {
                         buffer: &uniform_buf,
-                        range: 0 .. 64,
-                    },
-                },
-                wgpu::Binding {
-                    binding: 0,
-                    resource: wgpu::BindingResource::Buffer {
-                        buffer: &uniform_buf2,
                         range: 0 .. 64,
                     },
                 },
@@ -150,6 +109,17 @@ impl Pipeline {
             bind_group,
             render_pipeline: pipeline,
         }
+    }
+
+    fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
+        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
+        let mx_view = cgmath::Matrix4::look_at(
+            cgmath::Point3::new(1.5f32, -5.0, 3.0),
+            cgmath::Point3::new(0f32, 0.0, 0.0),
+            cgmath::Vector3::unit_z(),
+        );
+        let mx_correction = OPENGL_TO_WGPU_MATRIX;
+        mx_correction * mx_projection * mx_view
     }
 }
 
