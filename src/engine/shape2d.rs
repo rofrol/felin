@@ -1,8 +1,15 @@
 use wgpu;
 use cgmath;
+use std::{mem};
 use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
 use crate::gui::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
+
+#[derive(Clone, Copy)]
+pub struct UniformBufferObject {
+    pub proj: [[f32; 4]; 4],
+    pub view: [[f32; 4]; 4],
+}
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -17,15 +24,15 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
           
-        let mx_total = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
-        let mx_ref: &[f32; 16] = mx_total.as_ref();
+        let buffer = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let buffer_size = mem::size_of::<UniformBufferObject>() as wgpu::BufferAddress;
 
         let uniform_buf = device
                 .create_buffer_mapped(
-                    mx_ref.len(),
+                    1,
                     wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
                 )
-                .fill_from_slice(mx_ref);
+                .fill_from_slice(&[buffer]);
 
         let bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor { bindings: &[
@@ -44,7 +51,7 @@ impl Pipeline {
                     binding: 0,
                     resource: wgpu::BindingResource::Buffer {
                         buffer: &uniform_buf,
-                        range: 0 .. 64,
+                        range: 0 .. buffer_size,
                     },
                 },
             ],
@@ -111,15 +118,20 @@ impl Pipeline {
         }
     }
 
-    fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
+    fn generate_matrix(aspect_ratio: f32) -> UniformBufferObject {
         let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
         let mx_view = cgmath::Matrix4::look_at(
             cgmath::Point3::new(1.5f32, -5.0, 3.0),
             cgmath::Point3::new(0f32, 0.0, 0.0),
             cgmath::Vector3::unit_z(),
         );
-        let mx_correction = OPENGL_TO_WGPU_MATRIX;
-        mx_correction * mx_projection * mx_view
+
+        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
+        
+        UniformBufferObject {
+            proj: *projection.as_ref(),
+            view: *mx_view.as_ref()
+        }
     }
 }
 

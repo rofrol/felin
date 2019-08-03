@@ -7,10 +7,11 @@ layout(location = 1) in vec3 in_color;
 layout(location = 0) out vec3 frag_color;
 
 layout(set = 0, binding = 0) uniform Locals {
-    mat4 u_Transform;
+    mat4 proj;
+    mat4 view;
 };
 
 void main() {
-    gl_Position = u_Transform * vec4(in_position, 0.0, 1.0);
+    gl_Position = proj * view * vec4(in_position, 0.0, 1.0);
     frag_color = in_color;
 }
