@@ -5,10 +5,11 @@ use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
 use crate::gui::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct UniformBufferObject {
     pub proj: [[f32; 4]; 4],
     pub view: [[f32; 4]; 4],
+    pub transform: [[f32; 4]; 4],
 }
 
 
@@ -19,6 +20,7 @@ pub struct UniformBufferObject {
 pub struct Pipeline {
    pub bind_group: wgpu::BindGroup, 
    pub render_pipeline: wgpu::RenderPipeline,
+   pub uniform_buf: wgpu::Buffer,
 }
 
 impl Pipeline {
@@ -115,6 +117,7 @@ impl Pipeline {
         Pipeline {
             bind_group,
             render_pipeline: pipeline,
+            uniform_buf,
         }
     }
 
@@ -126,11 +129,13 @@ impl Pipeline {
             cgmath::Vector3::unit_z(),
         );
 
+        let transform = cgmath::Matrix4::identity();
         let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
         
         UniformBufferObject {
             proj: *projection.as_ref(),
-            view: *mx_view.as_ref()
+            view: *mx_view.as_ref(),
+            transform: *transform.as_ref(),
         }
     }
 }
