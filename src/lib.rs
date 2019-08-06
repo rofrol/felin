@@ -115,7 +115,7 @@ impl App {
                         running = false;
                     }
                     _ => {
-                        example.update(event);
+                        example.update(&sc_desc, event);
                     }
                 },
                 _ => (),

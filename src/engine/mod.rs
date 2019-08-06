@@ -35,6 +35,6 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
 pub trait Base {
     fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device) -> Self;
     fn resize(&mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device);
-    fn update(&mut self, event: wgpu::winit::WindowEvent);
+    fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
     fn render(&mut self, frame: &wgpu::SwapChainOutput, device: &mut wgpu::Device);
 }
