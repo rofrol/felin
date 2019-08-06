@@ -21,12 +21,14 @@ pub struct Pipeline {
    pub bind_group: wgpu::BindGroup, 
    pub render_pipeline: wgpu::RenderPipeline,
    pub uniform_buf: wgpu::Buffer,
+   pub matrixObject: UniformBufferObject,
 }
 
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
           
-        let buffer = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let matrix = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+
         let buffer_size = mem::size_of::<UniformBufferObject>() as wgpu::BufferAddress;
 
         let uniform_buf = device
@@ -34,7 +36,7 @@ impl Pipeline {
                     1,
                     wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
                 )
-                .fill_from_slice(&[buffer]);
+                .fill_from_slice(&[matrix]);
 
         let bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor { bindings: &[
@@ -118,13 +120,14 @@ impl Pipeline {
             bind_group,
             render_pipeline: pipeline,
             uniform_buf,
+            matrixObject: matrix,
         }
     }
 
     fn generate_matrix(aspect_ratio: f32) -> UniformBufferObject {
         let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
         let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, -0.1, 3.0),
+            cgmath::Point3::new(1.5f32, 0.0, 5.0),
             cgmath::Point3::new(0f32, 0.0, 0.0),
             cgmath::Vector3::unit_z(),
         );
@@ -132,11 +135,31 @@ impl Pipeline {
         let transform = cgmath::Matrix4::identity();
         let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
         
+
         UniformBufferObject {
             proj: *projection.as_ref(),
             view: *mx_view.as_ref(),
             transform: *transform.as_ref(),
         }
+    }
+
+    pub fn updateMatrix(&mut self, aspect_ratio: f32) {
+        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
+        let mx_view = cgmath::Matrix4::look_at(
+            cgmath::Point3::new(1.5f32, 0.0, 5.0),
+            cgmath::Point3::new(0f32, 0.0, 0.0),
+            cgmath::Vector3::unit_z(),
+        );
+
+        let transform = cgmath::Matrix4::identity();
+        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
+        
+
+        self.matrixObject = UniformBufferObject {
+            proj: *projection.as_ref(),
+            view: *mx_view.as_ref(),
+            transform: *transform.as_ref(),
+        };
     }
 }
 
