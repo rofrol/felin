@@ -11,23 +11,8 @@ pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Mesh
-///////////////////////////////////////////////////////////////////////////
-
-
-pub struct Mesh {
-    pub key: String,
-    pub vertices: Vec<Vertex>,
-    pub indices: Vec<u32>,
-    pub rendered: bool,
-}
-
-
-///////////////////////////////////////////////////////////////////////////
 // Vertex
 ///////////////////////////////////////////////////////////////////////////
-
-
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
@@ -47,4 +32,9 @@ impl Vertex {
     pub fn y(&self) -> f32 {
         self.in_position[1]
     }
+}
+
+
+pub trait Element {
+    fn render(&self) -> Vec<Vertex>;
 }
