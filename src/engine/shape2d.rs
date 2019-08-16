@@ -154,7 +154,6 @@ impl Pipeline {
         let transform = cgmath::Matrix4::identity();
         let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
         
-
         self.matrixObject = UniformBufferObject {
             proj: *projection.as_ref(),
             view: *mx_view.as_ref(),

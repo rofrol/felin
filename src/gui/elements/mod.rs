@@ -1,3 +1,3 @@
-mod square;
+mod rectangle;
 
-pub use square::Square;
+pub use rectangle::Rectangle;

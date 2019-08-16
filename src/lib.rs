@@ -15,11 +15,7 @@ use wgpu::winit::{
 pub use wgpu;
 pub use engine::shape2d;
 
-
-pub struct App;
-
-impl App {
-    pub fn new<E: Base>(title: &str) -> App {
+pub fn Run<E: Base>(title: &str) {
  
         env_logger::init();
 
@@ -125,10 +121,6 @@ impl App {
             example.render(&frame, &mut device);
             running &= !cfg!(feature = "metal-auto-capture");
         }
-
-        App {}
-    }
 }
-
 
 

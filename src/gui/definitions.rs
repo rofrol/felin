@@ -33,8 +33,3 @@ impl Vertex {
         self.in_position[1]
     }
 }
-
-
-pub trait Element {
-    fn render(&self) -> Vec<Vertex>;
-}
