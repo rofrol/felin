@@ -38,7 +38,7 @@ pub trait Element {
 }
 
 pub struct Widget {
-    pub name: String,
+    pub id: String,
     pub body: Box<dyn Element>,
 }
 

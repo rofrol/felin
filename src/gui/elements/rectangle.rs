@@ -2,13 +2,13 @@ use crate::gui::definitions::{Vertex, Element};
 use wgpu;
 
 pub struct Rectangle {
-    pub name: String,
+    pub id: String,
 }
 
 impl Rectangle {
     pub fn new() -> Self {
         Rectangle {
-            name: String::from("rectangle"),
+            id: String::from("rectangle"),
         }
     }
 }
