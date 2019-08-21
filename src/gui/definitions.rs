@@ -34,7 +34,7 @@ impl Vertex {
 }
 
 pub trait Element {
-    fn render(&self) -> Vec<Vertex>;
+    fn render(&self, rpass: &mut wgpu::RenderPass, device: &mut wgpu::Device);
 }
 
 pub struct Widget {

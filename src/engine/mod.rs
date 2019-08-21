@@ -46,7 +46,7 @@ pub trait Base {
     fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, registry: &mut gui::Registry) -> Self;
     fn resize(&mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device);
     fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
-    fn render(&mut self, frame: &wgpu::SwapChainOutput, device: &mut wgpu::Device, registry: &mut gui::Registry);
+    fn render(&mut self, frame: &wgpu::SwapChainOutput, rpass: &mut wgpu::RenderPass, device: &mut wgpu::Device);
 }
 
 pub struct App {
@@ -163,20 +163,30 @@ impl App {
 
             let frame = swap_chain.get_next_texture();
 
-            for value in self.registry.entries.iter_all() {
-                    let vertices = value.body.render();
+            let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
-                    // let vbo = device
-                    //     .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
-                    //     .fill_from_slice(&vertices); 
+            {
+                let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                        attachment: &frame.view,
+                        resolve_target: None,
+                        load_op: wgpu::LoadOp::Clear,
+                        store_op: wgpu::StoreOp::Store,
+                        clear_color: wgpu::Color::GREEN,
+                    }],
+                    depth_stencil_attachment: None,
+                });
 
-                    // rpass.set_pipeline(&self.render_pipeline);
-                    // rpass.set_bind_group(0, &self.bind_group, &[]);
-                    // rpass.set_vertex_buffers(&[(&vbo, 0)]);
-                    // rpass.draw(0 .. vertices.len() as u32, 0 .. 1);                   
+                example.render(&frame, &mut rpass, &mut device);
+
+                for element in self.registry.entries.iter_all() {
+                    element.body.render(&mut rpass, &mut device);                
+                }
             }
 
-            example.render(&frame, &mut device, &mut self.registry);
+            device.get_queue().submit(&[encoder.finish()]);   
+        
+          
             running &= !cfg!(feature = "metal-auto-capture");
         }
     }
