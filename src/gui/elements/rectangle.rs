@@ -1,28 +1,22 @@
-use crate::gui::definitions::{ Vertex};
-use cgmath;
+use crate::gui::elements::Element;
+use wgpu;
 
+
+#[derive(Debug)]
 pub struct Rectangle {
-    width: Option<u32>,
-    height: Option<u32>,
-    vertices: Option<Vec<Vertex>>,
-    transform: Option<cgmath::Matrix4<f32>>,
+    pub name: String,
 }
 
 impl Rectangle {
-    pub fn new() -> Rectangle {
+    pub fn new() -> Self {
         Rectangle {
-            width:None,
-            height:None,
-            vertices:None,
-            transform:None,
+            name: String::from("rectangle"),
         }
     }
+}
 
-    pub fn width(&mut self, width: u32) {
-        self.width = Some(width);
-    }
-
-    pub fn height(&mut self, height: u32) {
-        self.height = Some(height);
+impl Element for Rectangle { 
+    fn render(&self) {
+        println!("{}", self.name);
     }
 }
