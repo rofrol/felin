@@ -4,6 +4,7 @@ use std::{mem};
 use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
 use crate::gui::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
+use crate::gui::{Registry};
 
 #[derive(Clone, Copy, Debug)]
 pub struct UniformBufferObject {
@@ -11,7 +12,6 @@ pub struct UniformBufferObject {
     pub view: [[f32; 4]; 4],
     pub transform: [[f32; 4]; 4],
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Pipeline
@@ -22,6 +22,7 @@ pub struct Pipeline {
    pub render_pipeline: wgpu::RenderPipeline,
    pub uniform_buf: wgpu::Buffer,
    pub matrixObject: UniformBufferObject,
+   pub registry: Registry,
 }
 
 impl Pipeline {
@@ -121,6 +122,7 @@ impl Pipeline {
             render_pipeline: pipeline,
             uniform_buf,
             matrixObject: matrix,
+            registry: Registry::new(),
         }
     }
 
@@ -159,6 +161,39 @@ impl Pipeline {
             view: *mx_view.as_ref(),
             transform: *transform.as_ref(),
         };
+    }
+
+
+    pub fn draw(&self, frame: &wgpu::SwapChainOutput, device: &mut wgpu::Device) {
+            let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+
+            {
+                let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                        attachment: &frame.view,
+                        resolve_target: None,
+                        load_op: wgpu::LoadOp::Clear,
+                        store_op: wgpu::StoreOp::Store,
+                        clear_color: wgpu::Color::GREEN,
+                    }],
+                    depth_stencil_attachment: None,
+                });
+
+                for value in self.registry.entries.iter_all() {
+                    let vertices = value.body.render();
+
+                    let vbo = device
+                        .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
+                        .fill_from_slice(&vertices); 
+
+                    rpass.set_pipeline(&self.render_pipeline);
+                    rpass.set_bind_group(0, &self.bind_group, &[]);
+                    rpass.set_vertex_buffers(&[(&vbo, 0)]);
+                    rpass.draw(0 .. vertices.len() as u32, 0 .. 1);                   
+                }
+            }
+
+            device.get_queue().submit(&[encoder.finish()]);
     }
 }
 

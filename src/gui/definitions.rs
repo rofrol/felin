@@ -33,4 +33,14 @@ impl Vertex {
     }
 }
 
+pub trait Element {
+    fn render(&self) -> Vec<Vertex>;
+}
+
+pub struct Widget {
+    pub name: String,
+    pub body: Box<dyn Element>,
+}
+
+
 
