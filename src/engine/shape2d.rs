@@ -86,8 +86,8 @@ impl Pipeline {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        let vs_bytes = load_glsl(include_str!("shaders/shader2.vert"), ShaderStage::Vertex);
-        let fs_bytes = load_glsl(include_str!("shaders/shader2.frag"), ShaderStage::Fragment);
+        let vs_bytes = load_glsl(include_str!("shaders/shader.vert"), ShaderStage::Vertex);
+        let fs_bytes = load_glsl(include_str!("shaders/shader.frag"), ShaderStage::Fragment);
 
         let vs_module = device.create_shader_module(&vs_bytes);
         let fs_module = device.create_shader_module(&fs_bytes);
