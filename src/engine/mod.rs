@@ -9,8 +9,7 @@ use wgpu::winit::{
     WindowEvent,
 };
 
-
-
+use crate::gui;
 pub mod shape2d;
 
 #[allow(dead_code)]
@@ -44,15 +43,24 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
 }
 
 pub trait Base {
-    fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device) -> Self;
+    fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, registry: &mut gui::Registry) -> Self;
     fn resize(&mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device);
     fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
-    fn render(&mut self, frame: &wgpu::SwapChainOutput, device: &mut wgpu::Device);
+    fn render(&mut self, frame: &wgpu::SwapChainOutput, device: &mut wgpu::Device, registry: &mut gui::Registry);
 }
 
+pub struct App {
+    registry: gui::Registry,
+}
 
-pub fn App<E: Base>(title: &str) {
- 
+impl App {
+    pub fn new() -> App {
+       App {
+         registry: gui::Registry::new(),
+       }
+    }
+
+    pub fn init<E: Base>(&mut self, title: &str) {
         env_logger::init();
 
         let mut events_loop = EventsLoop::new();
@@ -116,7 +124,7 @@ pub fn App<E: Base>(title: &str) {
         let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         info!("Initializing the example...");
-        let mut example = E::init(&sc_desc, &mut device);
+        let mut example = E::init(&sc_desc, &mut device, &mut self.registry);
 
         info!("Entering render loop...");
         let mut running = true;
@@ -154,7 +162,22 @@ pub fn App<E: Base>(title: &str) {
             });
 
             let frame = swap_chain.get_next_texture();
-            example.render(&frame, &mut device);
+
+            for value in self.registry.entries.iter_all() {
+                    let vertices = value.body.render();
+
+                    // let vbo = device
+                    //     .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
+                    //     .fill_from_slice(&vertices); 
+
+                    // rpass.set_pipeline(&self.render_pipeline);
+                    // rpass.set_bind_group(0, &self.bind_group, &[]);
+                    // rpass.set_vertex_buffers(&[(&vbo, 0)]);
+                    // rpass.draw(0 .. vertices.len() as u32, 0 .. 1);                   
+            }
+
+            example.render(&frame, &mut device, &mut self.registry);
             running &= !cfg!(feature = "metal-auto-capture");
         }
+    }
 }

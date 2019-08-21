@@ -1,5 +1,8 @@
 pub mod definitions;
 pub mod elements;
+
+pub use definitions::{Element, Widget};
+
 use froggy;
 
 pub struct Registry {
