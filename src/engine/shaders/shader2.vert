@@ -9,6 +9,9 @@ layout(location = 0) out vec3 frag_color;
 layout(set = 0, binding = 0) uniform Globals {
     mat4 proj;
     mat4 view;
+};
+
+layout(set = 0, binding = 1) uniform Locals {
     mat4 transform;
 };
 
