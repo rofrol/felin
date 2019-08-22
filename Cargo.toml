@@ -12,6 +12,7 @@ glsl-to-spirv = "0.1"
 log = "0.4"
 uuid = { version = "0.7", features = ["serde", "v4"] }
 froggy = "*"
+lyon = "*"
 
 [dependencies.wgpu]
 git = "https://github.com/gfx-rs/wgpu-rs.git"

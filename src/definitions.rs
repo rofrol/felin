@@ -1,6 +1,10 @@
 use cgmath::{Point2, Vector2, Matrix4};
 use wgpu;
 
+pub use crate::engine::{RenderPass};
+
+pub use crate::gui::{ElementRegistry};
+
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
     1.0, 0.0, 0.0, 0.0,
@@ -33,8 +37,13 @@ impl Vertex {
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////
+// Elements
+///////////////////////////////////////////////////////////////////////////
+
 pub trait Element {
-    fn render(&self, rpass: &mut wgpu::RenderPass, device: &mut wgpu::Device);
+    fn render(&self, rpass: &mut RenderPass);
 }
 
 pub struct Widget {
@@ -42,5 +51,15 @@ pub struct Widget {
     pub body: Box<dyn Element>,
 }
 
+
+///////////////////////////////////////////////////////////////////////////
+// Rendering
+///////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug)]
+pub struct RenderResult {
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
+}
 
 

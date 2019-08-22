@@ -10,6 +10,8 @@ use wgpu::winit::{
 };
 
 use crate::gui;
+use crate::definitions::Vertex;
+
 pub mod shape2d;
 
 #[allow(dead_code)]
@@ -27,6 +29,12 @@ pub enum ShaderStage {
     Compute,
 }
 
+pub trait Base {
+    fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, custom_elements: &mut gui::ElementRegistry) -> Self;
+    fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
+    fn render(&mut self, frame: &wgpu::SwapChainOutput, rpass: &mut RenderPass);
+}
+
 pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
     use std::io::Read;
 
@@ -42,21 +50,69 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
     spv
 }
 
-pub trait Base {
-    fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, registry: &mut gui::Registry) -> Self;
-    fn resize(&mut self, sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device);
-    fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
-    fn render(&mut self, frame: &wgpu::SwapChainOutput, rpass: &mut wgpu::RenderPass, device: &mut wgpu::Device);
+
+pub struct RenderPass<'a, 'b> {
+    pub pass: wgpu::RenderPass<'a>,
+    pub device: &'b wgpu::Device,
+}
+
+impl <'a, 'b>RenderPass<'a, 'b> {
+    pub fn create(frame: &wgpu::SwapChainOutput, encoder: &'a mut wgpu::CommandEncoder, device: &'b wgpu::Device) -> Self {
+        let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                    attachment: &frame.view,
+                    resolve_target: None,
+                    load_op: wgpu::LoadOp::Clear,
+                    store_op: wgpu::StoreOp::Store,
+                    clear_color: wgpu::Color::GREEN,
+                }],
+                depth_stencil_attachment: None,
+            });
+
+        RenderPass {
+            pass,
+            device,
+        }
+    }
+
+    pub fn setup(&mut self, pipeline: &wgpu::RenderPipeline, bind_group: &wgpu::BindGroup) {
+        self.pass.set_pipeline(&pipeline); 
+        self.pass.set_bind_group(0, &bind_group, &[]);
+    }
+
+    pub fn draw(&mut self, vertices: Vec<Vertex>) {
+        let vbo = self.device
+            .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
+            .fill_from_slice(&vertices); 
+
+        self.pass.set_vertex_buffers(&[(&vbo, 0)]);
+        self.pass.draw(0 .. vertices.len() as u32, 0 .. 1); 
+    }
+
+    pub fn draw_indexed(&mut self, vertices: Vec<Vertex>, indices: Vec<u16>) {
+        let vbo = self.device
+            .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
+            .fill_from_slice(&vertices); 
+
+        self.pass.set_vertex_buffers(&[(&vbo, 0)]);
+
+        let index_buf = self.device
+            .create_buffer_mapped(indices.len(), wgpu::BufferUsage::INDEX)
+            .fill_from_slice(&indices);
+
+        self.pass.set_index_buffer(&index_buf, 0);
+        self.pass.draw_indexed(0 .. indices.len() as u32, 0, 0 .. 1);  
+    }
 }
 
 pub struct App {
-    registry: gui::Registry,
+    custom_elements: gui::ElementRegistry,
 }
 
 impl App {
     pub fn new() -> App {
        App {
-         registry: gui::Registry::new(),
+         custom_elements: gui::ElementRegistry::new(),
        }
     }
 
@@ -124,7 +180,9 @@ impl App {
         let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         info!("Initializing the example...");
-        let mut example = E::init(&sc_desc, &mut device, &mut self.registry);
+        let default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
+
+        let mut example = E::init(&sc_desc, &mut device, &mut self.custom_elements);
 
         info!("Entering render loop...");
         let mut running = true;
@@ -139,7 +197,7 @@ impl App {
                     sc_desc.width = physical.width.round() as u32;
                     sc_desc.height = physical.height.round() as u32;
                     swap_chain = device.create_swap_chain(&surface, &sc_desc);
-                    example.resize(&sc_desc, &mut device);
+                    // example.resize(&sc_desc, &mut device);
                 }
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::KeyboardInput {
@@ -166,22 +224,15 @@ impl App {
             let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
             {
-                let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                        attachment: &frame.view,
-                        resolve_target: None,
-                        load_op: wgpu::LoadOp::Clear,
-                        store_op: wgpu::StoreOp::Store,
-                        clear_color: wgpu::Color::GREEN,
-                    }],
-                    depth_stencil_attachment: None,
-                });
+                let mut render_pass: RenderPass = RenderPass::create(&frame, &mut encoder, &device);
 
-                example.render(&frame, &mut rpass, &mut device);
+                render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
 
-                for element in self.registry.entries.iter_all() {
-                    element.body.render(&mut rpass, &mut device);                
+                for element in self.custom_elements.entries.iter_all() {
+                    element.body.render(&mut render_pass);                 
                 }
+
+                 example.render(&frame, &mut render_pass);
             }
 
             device.get_queue().submit(&[encoder.finish()]);   

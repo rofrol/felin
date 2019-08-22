@@ -1,22 +1,20 @@
-pub mod definitions;
 pub mod elements;
 
-pub use definitions::{Element, Widget};
-
+use crate::definitions;
 use froggy;
 
-pub struct Registry {
+pub struct ElementRegistry {
     pub entries: froggy::Storage<definitions::Widget>,
 }
 
-impl Registry {
-    pub fn new() -> Registry {
-         Registry {
+impl ElementRegistry {
+    pub fn new() -> ElementRegistry {
+         ElementRegistry {
              entries: froggy::Storage::new(),
          }
     }
 
-    pub fn add(&mut self, widget: definitions::Widget) {
+    pub fn define(&mut self, widget: definitions::Widget) {
         self.entries.create(widget);
     }
 }

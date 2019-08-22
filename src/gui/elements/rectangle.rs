@@ -1,4 +1,4 @@
-use crate::gui::definitions::{Vertex, Element};
+use crate::definitions::{Vertex, Element, RenderResult, RenderPass};
 use wgpu;
 
 pub struct Triangle {
@@ -20,18 +20,13 @@ impl Triangle {
 }
 
 impl Element for Triangle { 
-    fn render(&self, rpass: &mut wgpu::RenderPass, device: &mut wgpu::Device) {
+    fn render(&self, rpass: &mut RenderPass) {
             let vertex_data = vec!(
                     Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
                     Vertex::new([0.0, -0.50], [1.0, 1.0, 1.0]),
                     Vertex::new([0.0, -0.20], [1.0, 1.0, 1.0]),
             );
 
-            let vbo = device
-                .create_buffer_mapped(vertex_data.len(), wgpu::BufferUsage::VERTEX)
-                .fill_from_slice(&vertex_data); 
-
-            rpass.set_vertex_buffers(&[(&vbo, 0)]);
-            rpass.draw(0 .. vertex_data.len() as u32, 0 .. 1);   
+            rpass.draw(vertex_data);
     }
 }
