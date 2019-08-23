@@ -29,7 +29,7 @@ pub struct Pipeline {
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
           
-        let matrix = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let matrix = Self::generate_matrix(sc_desc.width as f32, sc_desc.height as f32);
         let buffer_size = mem::size_of::<UniformBufferObject>() as wgpu::BufferAddress;
         
         let default_transform: cgmath::Matrix4<f32> = cgmath::Matrix4::identity();
@@ -147,11 +147,14 @@ impl Pipeline {
         }
     }
 
-    fn generate_matrix(aspect_ratio: f32) -> UniformBufferObject {
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
+    fn generate_matrix(width:f32, height:f32) -> UniformBufferObject {
+        let aspect_ratio = width / height;
+
+        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio , 1.0, width);
+        
         let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, 0.0, 5.0),
-            cgmath::Point3::new(0f32, 0.0, 0.0),
+            cgmath::Point3::new(1.0f32, 0.0, width / 2.0),
+            cgmath::Point3::new(1.0f32, height / 2.0, 0.0),
             cgmath::Vector3::unit_z(),
         );
 

@@ -134,15 +134,21 @@ impl App {
 
         #[cfg(not(feature = "gl"))]
         let (_window, instance, hidpi_factor, size, surface) = {
-            use wgpu::winit::Window;
+            use wgpu::winit::WindowBuilder;
 
             let instance = wgpu::Instance::new();
 
-            let window = Window::new(&events_loop).unwrap();
+            let window = WindowBuilder::new()
+                .with_title(title)
+                .with_maximized(true)
+                .with_resizable(true)
+                .build(&events_loop)
+                .unwrap();
+
             window.set_title(title);
+
             let hidpi_factor = window.get_hidpi_factor();
             let size = window.get_inner_size().unwrap().to_physical(hidpi_factor);
-
             let surface = instance.create_surface(&window);
 
             (window, instance, hidpi_factor, size, surface)

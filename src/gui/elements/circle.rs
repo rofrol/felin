@@ -31,8 +31,8 @@ impl Circle {
         let fill_options = FillOptions::tolerance(0.01);
 
         fill_circle(
-            point(0.2, 1.5),
-            1.0,
+            point(0.0, 0.0),
+            200.0,
             &fill_options,
             &mut BuffersBuilder::new(&mut mesh, |vertex : tessellation::FillVertex| {
                 Vertex {
