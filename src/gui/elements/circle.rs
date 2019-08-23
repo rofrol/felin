@@ -24,6 +24,21 @@ impl Circle {
 }
 
 impl Circle {
+    pub fn x(&mut self, x:f32) -> &mut Circle {
+        self.x = x;
+        self
+    }
+
+    pub fn radius(&mut self, radius:f32) -> &mut Circle {
+        self.radius = radius;
+        self
+    }
+
+    pub fn y(&mut self, y:f32) -> &mut Circle {
+        self.y = y;
+        self
+    }
+
     pub fn render(&self) -> RenderResult {
 
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
