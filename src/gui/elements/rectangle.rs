@@ -1,5 +1,4 @@
 use crate::definitions::{Vertex, Element, RenderResult, RenderPass};
-use wgpu;
 
 pub struct Triangle {
     pub x: f32,

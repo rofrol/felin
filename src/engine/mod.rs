@@ -10,7 +10,7 @@ use wgpu::winit::{
 };
 
 use crate::gui;
-use crate::definitions::Vertex;
+use crate::definitions::{Vertex, RenderResult};
 
 pub mod shape2d;
 
@@ -102,6 +102,15 @@ impl <'a, 'b>RenderPass<'a, 'b> {
 
         self.pass.set_index_buffer(&index_buf, 0);
         self.pass.draw_indexed(0 .. indices.len() as u32, 0, 0 .. 1);  
+    }
+
+
+    pub fn draw_result(&mut self, mesh: RenderResult) {
+        if mesh.indices.len() > 0 {
+            self.draw_indexed(mesh.vertices, mesh.indices);
+        } else {
+            self.draw(mesh.vertices);
+        }
     }
 }
 
