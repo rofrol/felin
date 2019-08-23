@@ -30,9 +30,9 @@ pub enum ShaderStage {
 }
 
 pub trait Base {
-    fn init(sc_desc: &wgpu::SwapChainDescriptor, device: &mut wgpu::Device, custom_elements: &mut gui::ElementRegistry) -> Self;
-    fn update(&mut self, sc_desc: &wgpu::SwapChainDescriptor, event: wgpu::winit::WindowEvent);
-    fn render(&mut self, frame: &wgpu::SwapChainOutput, rpass: &mut RenderPass);
+    fn init(custom_elements: &mut gui::ElementRegistry) -> Self;
+    fn update(&mut self, event: wgpu::winit::WindowEvent, custom_elements: &mut gui::ElementRegistry);
+    fn render(&mut self, rpass: &mut RenderPass, custom_elements: &mut gui::ElementRegistry);
 }
 
 pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
@@ -195,9 +195,10 @@ impl App {
         let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         info!("Initializing the example...");
-        let default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
 
-        let mut example = E::init(&sc_desc, &mut device, &mut self.custom_elements);
+        let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
+
+        let mut example = E::init(&mut self.custom_elements);
 
         info!("Entering render loop...");
         let mut running = true;
@@ -211,8 +212,9 @@ impl App {
                     info!("Resizing to {:?}", physical);
                     sc_desc.width = physical.width.round() as u32;
                     sc_desc.height = physical.height.round() as u32;
+
                     swap_chain = device.create_swap_chain(&surface, &sc_desc);
-                    // example.resize(&sc_desc, &mut device);
+                    default_pipeline = shape2d::Pipeline::new(&device, &sc_desc);
                 }
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::KeyboardInput {
@@ -228,7 +230,7 @@ impl App {
                         running = false;
                     }
                     _ => {
-                        example.update(&sc_desc, event);
+                        example.update(event, &mut self.custom_elements);
                     }
                 },
                 _ => (),
@@ -243,11 +245,7 @@ impl App {
 
                 render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
 
-                for element in self.custom_elements.entries.iter_all() {
-                    element.body.render(&mut render_pass);                 
-                }
-
-                 example.render(&frame, &mut render_pass);
+                example.render(&mut render_pass, &mut self.custom_elements);
             }
 
             device.get_queue().submit(&[encoder.finish()]);   
