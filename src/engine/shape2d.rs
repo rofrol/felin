@@ -7,15 +7,6 @@ use crate::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Globals uniform
-///////////////////////////////////////////////////////////////////////////
-#[derive(Clone, Copy, Debug)]
-pub struct UniformBufferObject {
-    pub proj: [[f32; 4]; 4],
-    pub view: [[f32; 4]; 4],
-}
-
-///////////////////////////////////////////////////////////////////////////
 // Pipeline
 ///////////////////////////////////////////////////////////////////////////
 
@@ -23,24 +14,24 @@ pub struct Pipeline {
    pub bind_group: wgpu::BindGroup, 
    pub render_pipeline: wgpu::RenderPipeline,
    pub uniform_buf: wgpu::Buffer,
-   pub global_matrix: UniformBufferObject,
+   pub ortho_matrix: cgmath::Matrix4<f32>,
 }
 
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
           
-        let matrix = Self::generate_matrix(sc_desc.width as f32, sc_desc.height as f32);
-        let buffer_size = mem::size_of::<UniformBufferObject>() as wgpu::BufferAddress;
-        
+        let ortho_matrix = Self::generate_matrix(sc_desc.width as f32, sc_desc.height as f32);
+        let ortho_buffer: &[f32; 16] = ortho_matrix.as_ref();
+
         let default_transform: cgmath::Matrix4<f32> = cgmath::Matrix4::identity();
         let transform_buf: &[f32; 16] = default_transform.as_ref();
 
         let uniform_buf = device
                 .create_buffer_mapped(
-                    1,
+                    16,
                     wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
                 )
-                .fill_from_slice(&[matrix]);
+                .fill_from_slice(ortho_buffer);
 
         let default_transform = device
                 .create_buffer_mapped(
@@ -71,7 +62,7 @@ impl Pipeline {
                     binding: 0,
                     resource: wgpu::BindingResource::Buffer {
                         buffer: &uniform_buf,
-                        range: 0 .. buffer_size,
+                        range: 0 .. 64,
                     },
                 },
                 wgpu::Binding {
@@ -143,44 +134,20 @@ impl Pipeline {
             bind_group,
             render_pipeline: pipeline,
             uniform_buf,
-            global_matrix: matrix,
+            ortho_matrix,
         }
     }
 
-    fn generate_matrix(width:f32, height:f32) -> UniformBufferObject {
-        let aspect_ratio = width / height;
-
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio , 1.0, width);
-        
-        let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.0f32, 0.0, width / 2.0),
-            cgmath::Point3::new(1.0f32, height / 2.0, 0.0),
-            cgmath::Vector3::unit_z(),
-        );
-
-        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
-        
-
-        UniformBufferObject {
-            proj: *projection.as_ref(),
-            view: *mx_view.as_ref(),
+    fn generate_matrix(width:f32, height:f32) ->  cgmath::Matrix4<f32> { 
+         cgmath::Ortho::<f32> {
+            left: 0.0,
+            right: width,
+            bottom: height,
+            top: 0.0,
+            near: -1.0,
+            far: 1.0,
         }
-    }
-
-    pub fn update_matrix(&mut self, aspect_ratio: f32) {
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
-        let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, 0.0, 5.0),
-            cgmath::Point3::new(0f32, 0.0, 0.0),
-            cgmath::Vector3::unit_z(),
-        );
-
-        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
-        
-        self.global_matrix = UniformBufferObject {
-            proj: *projection.as_ref(),
-            view: *mx_view.as_ref(),
-        };
+        .into()
     }
 }
 
