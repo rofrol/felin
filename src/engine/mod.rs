@@ -32,7 +32,7 @@ pub enum ShaderStage {
 pub trait Base {
     fn init(custom_elements: &mut gui::ElementRegistry) -> Self;
     fn update(&mut self, event: wgpu::winit::WindowEvent, custom_elements: &mut gui::ElementRegistry);
-    fn render(&mut self, rpass: &mut RenderPass, custom_elements: &mut gui::ElementRegistry);
+    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass, custom_elements: &mut gui::ElementRegistry);
 }
 
 pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
@@ -50,7 +50,9 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
     spv
 }
 
-
+///////////////////////////////////////////////////////////////////////////
+// RenderPass
+///////////////////////////////////////////////////////////////////////////
 pub struct RenderPass<'a, 'b> {
     pub pass: wgpu::RenderPass<'a>,
     pub device: &'b wgpu::Device,
@@ -114,6 +116,38 @@ impl <'a, 'b>RenderPass<'a, 'b> {
     }
 }
 
+
+pub struct Window {
+    pub width: u32,
+    pub height: u32,
+    pub clear_color: wgpu::Color,
+}
+
+
+impl Window {
+    pub fn init(width: u32, height: u32) -> Self {
+        Self {
+            width,
+            height,
+            clear_color: wgpu::Color::GREEN,
+        }
+    }
+
+    pub fn set_color(&mut self, color: [f32; 4]) {
+        self.clear_color = wgpu::Color {
+            r: color[0],
+            g: color[1],
+            b: color[2],
+            a: color[3],
+        }
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Main Application logic
+///////////////////////////////////////////////////////////////////////////
+
 pub struct App {
     custom_elements: gui::ElementRegistry,
 }
@@ -140,12 +174,12 @@ impl App {
 
             let window = WindowBuilder::new()
                 .with_title(title)
-                .with_maximized(true)
                 .with_resizable(true)
                 .build(&events_loop)
                 .unwrap();
 
-            window.set_title(title);
+            window.set_inner_size((1024, 760).into());
+ 
 
             let hidpi_factor = window.get_hidpi_factor();
             let size = window.get_inner_size().unwrap().to_physical(hidpi_factor);
@@ -197,6 +231,7 @@ impl App {
         info!("Initializing the example...");
 
         let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
+        let mut window = Window::init(sc_desc.width, sc_desc.height);
 
         let mut example = E::init(&mut self.custom_elements);
 
@@ -214,7 +249,7 @@ impl App {
                     sc_desc.height = physical.height.round() as u32;
 
                     swap_chain = device.create_swap_chain(&surface, &sc_desc);
-                    default_pipeline = shape2d::Pipeline::new(&device, &sc_desc);
+  
                 }
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::KeyboardInput {
@@ -245,7 +280,7 @@ impl App {
 
                 render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
 
-                example.render(&mut render_pass, &mut self.custom_elements);
+                example.render(&mut window, &mut render_pass, &mut self.custom_elements);
             }
 
             device.get_queue().submit(&[encoder.finish()]);   

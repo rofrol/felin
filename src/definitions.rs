@@ -43,6 +43,15 @@ pub struct Widget {
     pub body: Box<dyn Element>,
 }
 
+impl Widget {
+    pub fn new(id: &str, element: Box<dyn Element>) -> Widget {
+        Widget {
+            id: String::from(id),
+            body: element,
+        }
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 // Rendering

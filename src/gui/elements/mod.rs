@@ -1,5 +1,5 @@
-mod rectangle;
+mod triangle;
 mod circle;
 
-pub use rectangle::Triangle;
+pub use triangle::Triangle;
 pub use circle::Circle;
