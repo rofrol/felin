@@ -24,17 +24,6 @@ impl Circle {
     }
 }
 
-struct VertCtr {
-    color: [f32; 3],
-}
-
-impl VertexConstructor<tessellation::FillVertex, Vertex> for VertCtr {
-    fn new_vertex(&mut self, vertex: tessellation::FillVertex) -> Vertex {
-        Vertex { in_position: vertex.position.to_array(), in_color: self.color  }
-    }
-}
-
-
 impl Circle {
     pub fn render(&self) -> RenderResult {
 
@@ -45,7 +34,12 @@ impl Circle {
             point(0.2, 1.5),
             1.0,
             &fill_options,
-            &mut BuffersBuilder::new(&mut mesh, VertCtr {color: [1.0, 1.0, 1.0]}),
+            &mut BuffersBuilder::new(&mut mesh, |vertex : tessellation::FillVertex| {
+                Vertex {
+                    in_position: vertex.position.to_array(),
+                    in_color: self.color,
+                }
+            }),
         ).unwrap();
 
         RenderResult {
