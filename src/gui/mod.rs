@@ -26,7 +26,7 @@ impl Widget {
     }
 
 
-    pub fn append(&mut self, id: &str, parentId: &str, element: Box<dyn Element>) -> &mut Self {
+    pub fn append(&mut self, parentId: &str, id: &str, element: Box<dyn Element>) -> &mut Self {
         let parent_node:froggy::Pointer<Node> = self.get_node(&parentId);
 
         let node_element:Node = Node {
