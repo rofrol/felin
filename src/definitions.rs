@@ -1,9 +1,10 @@
 use cgmath::{Point2, Vector2, Matrix4};
+use froggy;
 use wgpu;
 
 pub use crate::engine::{RenderPass};
 
-pub use crate::gui::{ElementRegistry};
+pub use crate::gui::{Widget};
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
@@ -38,20 +39,12 @@ pub trait Element {
     fn render(&self, rpass: &mut RenderPass);
 }
 
-pub struct Widget {
+pub struct Node {
     pub id: String,
     pub body: Box<dyn Element>,
+    pub parent_node: Option<froggy::Pointer<Node>>,
+    pub children: Vec<froggy::Pointer<Node>>,
 }
-
-impl Widget {
-    pub fn new(id: &str, element: Box<dyn Element>) -> Widget {
-        Widget {
-            id: String::from(id),
-            body: element,
-        }
-    }
-}
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Rendering

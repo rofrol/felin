@@ -30,9 +30,9 @@ pub enum ShaderStage {
 }
 
 pub trait Base {
-    fn init(custom_elements: &mut gui::ElementRegistry) -> Self;
-    fn update(&mut self, event: wgpu::winit::WindowEvent, custom_elements: &mut gui::ElementRegistry);
-    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass, custom_elements: &mut gui::ElementRegistry);
+    fn init(window:&mut Window) -> Self;
+    fn update(&mut self, event: wgpu::winit::WindowEvent);
+    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass);
 }
 
 pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
@@ -148,15 +148,11 @@ impl Window {
 // Main Application logic
 ///////////////////////////////////////////////////////////////////////////
 
-pub struct App {
-    custom_elements: gui::ElementRegistry,
-}
+pub struct App;
 
 impl App {
     pub fn new() -> App {
-       App {
-         custom_elements: gui::ElementRegistry::new(),
-       }
+       App
     }
 
     pub fn init<E: Base>(&mut self, title: &str) {
@@ -233,7 +229,7 @@ impl App {
         let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
         let mut window = Window::init(sc_desc.width, sc_desc.height);
 
-        let mut example = E::init(&mut self.custom_elements);
+        let mut example = E::init(&mut window);
 
         info!("Entering render loop...");
         let mut running = true;
@@ -265,7 +261,7 @@ impl App {
                         running = false;
                     }
                     _ => {
-                        example.update(event, &mut self.custom_elements);
+                        example.update(event);
                     }
                 },
                 _ => (),
@@ -280,7 +276,7 @@ impl App {
 
                 render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
 
-                example.render(&mut window, &mut render_pass, &mut self.custom_elements);
+                example.render(&mut window, &mut render_pass);
             }
 
             device.get_queue().submit(&[encoder.finish()]);   
