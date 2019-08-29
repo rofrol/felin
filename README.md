@@ -27,7 +27,7 @@ pub struct Main;
 
 impl Base for Main {
     fn init(_window: &mut Window) -> Self {
-  
+        Main
     }
 
     fn update(&mut self, event: &Event) {
