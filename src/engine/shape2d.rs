@@ -3,14 +3,7 @@ use cgmath;
 use std::{mem};
 use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
-use crate::gui::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
-
-#[derive(Clone, Copy, Debug)]
-pub struct UniformBufferObject {
-    pub proj: [[f32; 4]; 4],
-    pub view: [[f32; 4]; 4],
-    pub transform: [[f32; 4]; 4],
-}
+use crate::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -21,29 +14,47 @@ pub struct Pipeline {
    pub bind_group: wgpu::BindGroup, 
    pub render_pipeline: wgpu::RenderPipeline,
    pub uniform_buf: wgpu::Buffer,
-   pub matrixObject: UniformBufferObject,
+   pub ortho_matrix: cgmath::Matrix4<f32>,
 }
 
 impl Pipeline {
     pub fn new(device: &wgpu::Device, sc_desc: &wgpu::SwapChainDescriptor) -> Pipeline {
           
-        let matrix = Self::generate_matrix(sc_desc.width as f32 / sc_desc.height as f32);
+        let ortho_matrix = Self::generate_matrix(sc_desc.width as f32, sc_desc.height as f32);
+        let ortho_buffer: &[f32; 16] = ortho_matrix.as_ref();
 
-        let buffer_size = mem::size_of::<UniformBufferObject>() as wgpu::BufferAddress;
+        let default_transform: cgmath::Matrix4<f32> = cgmath::Matrix4::identity();
+        let transform_buf: &[f32; 16] = default_transform.as_ref();
 
         let uniform_buf = device
                 .create_buffer_mapped(
-                    1,
-                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
+                    16,
+                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
                 )
-                .fill_from_slice(&[matrix]);
+                .fill_from_slice(ortho_buffer);
+
+        let default_transform = device
+                .create_buffer_mapped(
+                    16,
+                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+                )
+                .fill_from_slice(transform_buf);            
 
         let bind_group_layout = device.create_bind_group_layout(
             &wgpu::BindGroupLayoutDescriptor { bindings: &[
                 wgpu::BindGroupLayoutBinding {
                     binding: 0,
                     visibility: wgpu::ShaderStage::VERTEX,
-                    ty: wgpu::BindingType::UniformBuffer,
+                    ty: wgpu::BindingType::UniformBuffer {
+                        dynamic: false,
+                    },
+                },
+                wgpu::BindGroupLayoutBinding {
+                    binding: 1,
+                    visibility: wgpu::ShaderStage::VERTEX,
+                    ty: wgpu::BindingType::UniformBuffer {
+                        dynamic: false,
+                    },
                 },
             ] }
         );
@@ -55,7 +66,14 @@ impl Pipeline {
                     binding: 0,
                     resource: wgpu::BindingResource::Buffer {
                         buffer: &uniform_buf,
-                        range: 0 .. buffer_size,
+                        range: 0 .. 64,
+                    },
+                },
+                wgpu::Binding {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Buffer {
+                        buffer: &default_transform,
+                        range: 0 .. 64,
                     },
                 },
             ],
@@ -65,29 +83,30 @@ impl Pipeline {
             bind_group_layouts: &[&bind_group_layout],
         });
 
-        let vs_bytes = load_glsl(include_str!("shaders/shader2.vert"), ShaderStage::Vertex);
-        let fs_bytes = load_glsl(include_str!("shaders/shader2.frag"), ShaderStage::Fragment);
+        let vs_bytes = load_glsl(include_str!("shaders/shader.vert"), ShaderStage::Vertex);
+        let fs_bytes = load_glsl(include_str!("shaders/shader.frag"), ShaderStage::Fragment);
+
 
         let vs_module = device.create_shader_module(&vs_bytes);
         let fs_module = device.create_shader_module(&fs_bytes);
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &pipeline_layout,
-            vertex_stage: wgpu::PipelineStageDescriptor {
+            vertex_stage: wgpu::ProgrammableStageDescriptor {
                 module: &vs_module,
                 entry_point: "main",
             },
-            fragment_stage: Some(wgpu::PipelineStageDescriptor {
+            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
                 module: &fs_module,
                 entry_point: "main",
             }),
-            rasterization_state: wgpu::RasterizationStateDescriptor {
+            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,
                 cull_mode: wgpu::CullMode::None,
                 depth_bias: 0,
                 depth_bias_slope_scale: 0.0,
                 depth_bias_clamp: 0.0,
-            },
+            }),
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             color_states: &[wgpu::ColorStateDescriptor {
                 format: wgpu::TextureFormat::Bgra8Unorm,
@@ -114,51 +133,28 @@ impl Pipeline {
                 ],
             }],
             sample_count: 1,
+            sample_mask: !0,
+            alpha_to_coverage_enabled: false,
         });
 
         Pipeline {
             bind_group,
             render_pipeline: pipeline,
             uniform_buf,
-            matrixObject: matrix,
+            ortho_matrix,
         }
     }
 
-    fn generate_matrix(aspect_ratio: f32) -> UniformBufferObject {
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
-        let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, 0.0, 5.0),
-            cgmath::Point3::new(0f32, 0.0, 0.0),
-            cgmath::Vector3::unit_z(),
-        );
-
-        let transform = cgmath::Matrix4::identity();
-        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
-        
-
-        UniformBufferObject {
-            proj: *projection.as_ref(),
-            view: *mx_view.as_ref(),
-            transform: *transform.as_ref(),
+    fn generate_matrix(width:f32, height:f32) ->  cgmath::Matrix4<f32> { 
+         cgmath::Ortho::<f32> {
+            left: 0.0,
+            right: width,
+            bottom: height,
+            top: 0.0,
+            near: -1.0,
+            far: 1.0,
         }
-    }
-
-    pub fn updateMatrix(&mut self, aspect_ratio: f32) {
-        let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 10.0);
-        let mx_view = cgmath::Matrix4::look_at(
-            cgmath::Point3::new(1.5f32, 0.0, 5.0),
-            cgmath::Point3::new(0f32, 0.0, 0.0),
-            cgmath::Vector3::unit_z(),
-        );
-
-        let transform = cgmath::Matrix4::identity();
-        let projection = OPENGL_TO_WGPU_MATRIX * mx_projection;
-        
-        self.matrixObject = UniformBufferObject {
-            proj: *projection.as_ref(),
-            view: *mx_view.as_ref(),
-            transform: *transform.as_ref(),
-        };
+        .into()
     }
 }
 
