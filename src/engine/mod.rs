@@ -1,18 +1,27 @@
-use log::info;
-use wgpu::winit::{
-    ElementState,
-    Event,
-    EventsLoop,
-    KeyboardInput,
-    VirtualKeyCode,
-    WindowEvent,
+use winit::{
+    event_loop::{ControlFlow, EventLoop},
+    event::{self,  WindowEvent},
+    window::WindowBuilder,
 };
 
 use crate::gui;
 use crate::definitions::{Vertex, RenderResult};
+pub use window_events::Event;
 
-pub mod event_state;
+
+pub mod window_events;
 pub mod shape2d;
+
+
+///////////////////////////////////////////////////////////////////////////
+// Base trait for application
+///////////////////////////////////////////////////////////////////////////
+pub trait Base: 'static {
+    fn init(window:&mut Window) -> Self;
+    fn update(&mut self, event: &Event);
+    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass);
+}
+
 
 #[allow(dead_code)]
 pub enum ShaderStage {
@@ -21,25 +30,14 @@ pub enum ShaderStage {
     Compute,
 }
 
-pub trait Base {
-    fn init(window:&mut Window) -> Self;
-    fn update(&mut self, event: &event_state::Event);
-    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass);
-}
-
-pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
-    use std::io::Read;
-
+pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u32> {
     let ty = match stage {
         ShaderStage::Vertex => glsl_to_spirv::ShaderType::Vertex,
         ShaderStage::Fragment => glsl_to_spirv::ShaderType::Fragment,
         ShaderStage::Compute => glsl_to_spirv::ShaderType::Compute,
     };
 
-    let mut output = glsl_to_spirv::compile(&code, ty).unwrap();
-    let mut spv = Vec::new();
-    output.read_to_end(&mut spv).unwrap();
-    spv
+    wgpu::read_spirv(glsl_to_spirv::compile(&code, ty).unwrap()).unwrap()
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -79,7 +77,7 @@ impl <'a, 'b>RenderPass<'a, 'b> {
             .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
             .fill_from_slice(&vertices); 
 
-        self.pass.set_vertex_buffers(&[(&vbo, 0)]);
+        self.pass.set_vertex_buffers(0, &[(&vbo, 0)]);
         self.pass.draw(0 .. vertices.len() as u32, 0 .. 1); 
     }
 
@@ -88,7 +86,7 @@ impl <'a, 'b>RenderPass<'a, 'b> {
             .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
             .fill_from_slice(&vertices); 
 
-        self.pass.set_vertex_buffers(&[(&vbo, 0)]);
+        self.pass.set_vertex_buffers(0, &[(&vbo, 0)]);
 
         let index_buf = self.device
             .create_buffer_mapped(indices.len(), wgpu::BufferUsage::INDEX)
@@ -128,7 +126,7 @@ impl Window {
         }
     }
 
-    pub fn set_color(&mut self, color: [f32; 4]) {
+    pub fn set_color(&mut self, color: [f64; 4]) {
         self.clear_color = wgpu::Color {
             r: color[0],
             g: color[1],
@@ -151,55 +149,51 @@ impl App {
     }
 
     pub fn init<E: Base>(&mut self, title: &str) {
+
         env_logger::init();
-
-        let mut events_loop = EventsLoop::new();
-
-        info!("Initializing the window...");
+        let window_event_loop = EventLoop::new();
 
         #[cfg(not(feature = "gl"))]
         let (_window, instance, hidpi_factor, size, surface) = {
-            use wgpu::winit::WindowBuilder;
 
-            let instance = wgpu::Instance::new();
-
-            let window = WindowBuilder::new()
+          let window = WindowBuilder::new()
                 .with_title(title)
                 .with_resizable(true)
-                .build(&events_loop)
+                .build(&window_event_loop)
                 .unwrap();
+            
+            let hidpi_factor = window.hidpi_factor();
+            let size = window.inner_size().to_physical(hidpi_factor);
 
-            window.set_inner_size((1024, 760).into());
- 
-
-            let hidpi_factor = window.get_hidpi_factor();
-            let size = window.get_inner_size().unwrap().to_physical(hidpi_factor);
+            let instance = wgpu::Instance::new();
             let surface = instance.create_surface(&window);
 
             (window, instance, hidpi_factor, size, surface)
         };
 
-        #[cfg(feature = "gl")]
-        let (instance, hidpi_factor, size, surface) = {
-            let wb = wgpu::winit::WindowBuilder::new();
+      #[cfg(feature = "gl")]
+        let (_window, instance, hidpi_factor, size, surface) = {
+            let wb = winit::WindowBuilder::new();
             let cb = wgpu::glutin::ContextBuilder::new().with_vsync(true);
-            let context = wgpu::glutin::WindowedContext::new_windowed(wb, cb, &events_loop).unwrap();
+            let context = cb.build_windowed(wb, &event_loop).unwrap();
             context.window().set_title(title);
 
-            let hidpi_factor = context.window().get_hidpi_factor();
+            let hidpi_factor = context.window().hidpi_factor();
             let size = context
                 .window()
                 .get_inner_size()
                 .unwrap()
                 .to_physical(hidpi_factor);
 
+            let (context, window) = unsafe { context.make_current().unwrap().split() };
+
             let instance = wgpu::Instance::new(context);
             let surface = instance.get_surface();
 
-            (instance, hidpi_factor, size, surface)
+            (window, instance, hidpi_factor, size, surface)
         };
 
-        let adapter = instance.get_adapter(&wgpu::AdapterDescriptor {
+        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::LowPower,
         });
 
@@ -215,63 +209,59 @@ impl App {
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: size.width.round() as u32,
             height: size.height.round() as u32,
+            present_mode: wgpu::PresentMode::Vsync,
         };
 
         let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        info!("Initializing the example...");
 
         let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
         let mut window = Window::new(sc_desc.width, sc_desc.height);
-        let mut window_event: event_state::Event = event_state::Event::new();
+        let mut input = Event::new();
         let mut example = E::init(&mut window);
 
         ///////////////////////////////////////////////////////////////////////////
         // Render loop
         ///////////////////////////////////////////////////////////////////////////
+        //   let physical = size.to_physical(hidpi_factor);
+        //         sc_desc.width = physical.width.round() as u32;
+        //         sc_desc.height = physical.height.round() as u32;
+        //         swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        let mut running = true;
-        while running {
-            events_loop.poll_events(|event| match event {
-                Event::WindowEvent {
-                    event: WindowEvent::Resized(size),
-                    ..
-                } => {
-                    let physical = size.to_physical(hidpi_factor);
-                    info!("Resizing to {:?}", physical);
-                    sc_desc.width = physical.width.round() as u32;
-                    sc_desc.height = physical.height.round() as u32;
-                    swap_chain = device.create_swap_chain(&surface, &sc_desc);
-                }
-                Event::WindowEvent { event, .. } => match event {
-                    // WindowEvent::MouseInput => {
-                    //     if event.state == ElementState::Pressed {
-                    //         window_event.mouse.button_pressed(element.button);
-                    //     } else {
-                    //         window_event.mouse.button_released(element.button);
-                    //     }
-                    // }
-                    | WindowEvent::CloseRequested => {
-                        running = false;
+         window_event_loop.run(move |event, _, control_flow| {
+            *control_flow = if cfg!(feature = "metal-auto-capture") {
+                ControlFlow::Exit
+            } else {
+                ControlFlow::Poll
+            };
+
+            match event {
+                event::Event::WindowEvent { event, .. } => match event {
+                    WindowEvent::CloseRequested => {
+                        *control_flow = ControlFlow::Exit;
                     }
                     _ => {
-                        example.update(&window_event);
+                        example.update(&input)
+                    },
+                }
+                event::Event::EventsCleared => {
+                    let frame = swap_chain.get_next_texture();
+                    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+
+                    {
+                        let mut render_pass: RenderPass = RenderPass::create(&frame, &mut encoder, &device);
+                        render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
+                        example.render(&mut window, &mut render_pass);
                     }
+
+                    device.get_queue().submit(&[encoder.finish()]);
                 },
-                _ => (),
-            });
-
-            let frame = swap_chain.get_next_texture();
-            let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
-
-            {
-                let mut render_pass: RenderPass = RenderPass::create(&frame, &mut encoder, &device);
-                render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
-                example.render(&mut window, &mut render_pass);
+                _ => (),  
             }
-
-            device.get_queue().submit(&[encoder.finish()]);   
-            running &= !cfg!(feature = "metal-auto-capture");
+            });
         }
-    }
 }
+
+
+
+

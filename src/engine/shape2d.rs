@@ -29,14 +29,14 @@ impl Pipeline {
         let uniform_buf = device
                 .create_buffer_mapped(
                     16,
-                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
+                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
                 )
                 .fill_from_slice(ortho_buffer);
 
         let default_transform = device
                 .create_buffer_mapped(
                     16,
-                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::TRANSFER_DST,
+                    wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
                 )
                 .fill_from_slice(transform_buf);            
 
@@ -45,12 +45,16 @@ impl Pipeline {
                 wgpu::BindGroupLayoutBinding {
                     binding: 0,
                     visibility: wgpu::ShaderStage::VERTEX,
-                    ty: wgpu::BindingType::UniformBuffer,
+                    ty: wgpu::BindingType::UniformBuffer {
+                        dynamic: false,
+                    },
                 },
                 wgpu::BindGroupLayoutBinding {
                     binding: 1,
                     visibility: wgpu::ShaderStage::VERTEX,
-                    ty: wgpu::BindingType::UniformBuffer,
+                    ty: wgpu::BindingType::UniformBuffer {
+                        dynamic: false,
+                    },
                 },
             ] }
         );
@@ -82,26 +86,27 @@ impl Pipeline {
         let vs_bytes = load_glsl(include_str!("shaders/shader.vert"), ShaderStage::Vertex);
         let fs_bytes = load_glsl(include_str!("shaders/shader.frag"), ShaderStage::Fragment);
 
+
         let vs_module = device.create_shader_module(&vs_bytes);
         let fs_module = device.create_shader_module(&fs_bytes);
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             layout: &pipeline_layout,
-            vertex_stage: wgpu::PipelineStageDescriptor {
+            vertex_stage: wgpu::ProgrammableStageDescriptor {
                 module: &vs_module,
                 entry_point: "main",
             },
-            fragment_stage: Some(wgpu::PipelineStageDescriptor {
+            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
                 module: &fs_module,
                 entry_point: "main",
             }),
-            rasterization_state: wgpu::RasterizationStateDescriptor {
+            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
                 front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::None,
+                cull_mode: wgpu::CullMode::Back,
                 depth_bias: 0,
                 depth_bias_slope_scale: 0.0,
                 depth_bias_clamp: 0.0,
-            },
+            }),
             primitive_topology: wgpu::PrimitiveTopology::TriangleList,
             color_states: &[wgpu::ColorStateDescriptor {
                 format: wgpu::TextureFormat::Bgra8Unorm,
@@ -128,6 +133,8 @@ impl Pipeline {
                 ],
             }],
             sample_count: 1,
+            sample_mask: !0,
+            alpha_to_coverage_enabled: false,
         });
 
         Pipeline {
