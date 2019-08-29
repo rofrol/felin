@@ -21,9 +21,9 @@ impl Triangle {
 impl Element for Triangle {
     fn render(&self, rpass: &mut RenderPass) {
         let vertex_data = vec![
-            Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0, 1.0]),
-            Vertex::new([0.0, -0.50], [1.0, 1.0, 1.0, 1.0]),
-            Vertex::new([0.0, -0.20], [1.0, 1.0, 1.0, 1.0]),
+            Vertex::new([10.0, 90.0], [1.0, 1.0, 1.0, 1.0]),
+            Vertex::new([110.0, 90.50], [1.0, 1.0, 1.0, 1.0]),
+            Vertex::new([50.0, 20.20], [1.0, 1.0, 1.0, 1.0]),
         ];
 
         rpass.draw(vertex_data);

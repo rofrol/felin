@@ -56,7 +56,7 @@ impl<'a, 'b> RenderPass<'a, 'b> {
                 resolve_target: None,
                 load_op: wgpu::LoadOp::Clear,
                 store_op: wgpu::StoreOp::Store,
-                clear_color: wgpu::Color::GREEN,
+                clear_color: wgpu::Color::RED,
             }],
             depth_stencil_attachment: None,
         });
@@ -156,7 +156,6 @@ impl App {
                 .with_resizable(true)
                 .build(&window_event_loop)
                 .unwrap();
-                
             let hidpi_factor = window.hidpi_factor();
             let size = window.inner_size().to_physical(hidpi_factor);
 
