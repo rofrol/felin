@@ -1,10 +1,9 @@
-use cgmath::{Point2, Vector2, Matrix4};
+use cgmath::Matrix4;
 use froggy;
-use wgpu;
 
-pub use crate::engine::{RenderPass};
+pub use crate::engine::RenderPass;
 
-pub use crate::gui::{Widget};
+pub use crate::gui::Widget;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
@@ -21,15 +20,17 @@ pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
 #[derive(Copy, Clone, Debug)]
 pub struct Vertex {
     pub in_position: [f32; 2],
-    pub in_color: [f32; 3],
+    pub in_color: [f32; 4],
 }
 
 impl Vertex {
-    pub fn new(in_position: [f32; 2], in_color: [f32; 3]) -> Self {
-        Self {in_position, in_color}
+    pub fn new(in_position: [f32; 2], in_color: [f32; 4]) -> Self {
+        Self {
+            in_position,
+            in_color,
+        }
     }
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Elements
@@ -55,5 +56,3 @@ pub struct RenderResult {
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
 }
-
-

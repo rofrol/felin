@@ -1,4 +1,4 @@
-use crate::definitions::{Vertex, Element, RenderResult, RenderPass};
+use crate::definitions::{Element, RenderPass, Vertex};
 
 pub struct Triangle {
     pub x: f32,
@@ -18,14 +18,14 @@ impl Triangle {
     }
 }
 
-impl Element for Triangle { 
+impl Element for Triangle {
     fn render(&self, rpass: &mut RenderPass) {
-            let vertex_data = vec!(
-                    Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0]),
-                    Vertex::new([0.0, -0.50], [1.0, 1.0, 1.0]),
-                    Vertex::new([0.0, -0.20], [1.0, 1.0, 1.0]),
-            );
+        let vertex_data = vec![
+            Vertex::new([-0.50, 0.0], [1.0, 1.0, 1.0, 1.0]),
+            Vertex::new([0.0, -0.50], [1.0, 1.0, 1.0, 1.0]),
+            Vertex::new([0.0, -0.20], [1.0, 1.0, 1.0, 1.0]),
+        ];
 
-            rpass.draw(vertex_data);
+        rpass.draw(vertex_data);
     }
 }

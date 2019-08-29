@@ -1,27 +1,23 @@
 use winit::{
+    event::{self, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    event::{self,  WindowEvent},
     window::WindowBuilder,
 };
 
-use crate::gui;
-use crate::definitions::{Vertex, RenderResult};
+use crate::definitions::{RenderResult, Vertex};
 pub use window_events::Event;
 
-
-pub mod window_events;
 pub mod shape2d;
-
+pub mod window_events;
 
 ///////////////////////////////////////////////////////////////////////////
 // Base trait for application
 ///////////////////////////////////////////////////////////////////////////
 pub trait Base: 'static {
-    fn init(window:&mut Window) -> Self;
+    fn init(window: &mut Window) -> Self;
     fn update(&mut self, event: &Event);
-    fn render(&mut self, window:&mut Window, rpass: &mut RenderPass);
+    fn render(&mut self, window: &mut Window, rpass: &mut RenderPass);
 }
-
 
 #[allow(dead_code)]
 pub enum ShaderStage {
@@ -48,54 +44,57 @@ pub struct RenderPass<'a, 'b> {
     pub device: &'b wgpu::Device,
 }
 
-impl <'a, 'b>RenderPass<'a, 'b> {
-    pub fn create(frame: &wgpu::SwapChainOutput, encoder: &'a mut wgpu::CommandEncoder, device: &'b wgpu::Device) -> Self {
-        let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &frame.view,
-                    resolve_target: None,
-                    load_op: wgpu::LoadOp::Clear,
-                    store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color::GREEN,
-                }],
-                depth_stencil_attachment: None,
-            });
+impl<'a, 'b> RenderPass<'a, 'b> {
+    pub fn create(
+        frame: &wgpu::SwapChainOutput,
+        encoder: &'a mut wgpu::CommandEncoder,
+        device: &'b wgpu::Device,
+    ) -> Self {
+        let pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                attachment: &frame.view,
+                resolve_target: None,
+                load_op: wgpu::LoadOp::Clear,
+                store_op: wgpu::StoreOp::Store,
+                clear_color: wgpu::Color::GREEN,
+            }],
+            depth_stencil_attachment: None,
+        });
 
-        RenderPass {
-            pass,
-            device,
-        }
+        RenderPass { pass, device }
     }
 
     pub fn setup(&mut self, pipeline: &wgpu::RenderPipeline, bind_group: &wgpu::BindGroup) {
-        self.pass.set_pipeline(&pipeline); 
+        self.pass.set_pipeline(&pipeline);
         self.pass.set_bind_group(0, &bind_group, &[]);
     }
 
     pub fn draw(&mut self, vertices: Vec<Vertex>) {
-        let vbo = self.device
+        let vbo = self
+            .device
             .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
-            .fill_from_slice(&vertices); 
+            .fill_from_slice(&vertices);
 
         self.pass.set_vertex_buffers(0, &[(&vbo, 0)]);
-        self.pass.draw(0 .. vertices.len() as u32, 0 .. 1); 
+        self.pass.draw(0..vertices.len() as u32, 0..1);
     }
 
     pub fn draw_indexed(&mut self, vertices: Vec<Vertex>, indices: Vec<u16>) {
-        let vbo = self.device
+        let vbo = self
+            .device
             .create_buffer_mapped(vertices.len(), wgpu::BufferUsage::VERTEX)
-            .fill_from_slice(&vertices); 
+            .fill_from_slice(&vertices);
 
         self.pass.set_vertex_buffers(0, &[(&vbo, 0)]);
 
-        let index_buf = self.device
+        let index_buf = self
+            .device
             .create_buffer_mapped(indices.len(), wgpu::BufferUsage::INDEX)
             .fill_from_slice(&indices);
 
         self.pass.set_index_buffer(&index_buf, 0);
-        self.pass.draw_indexed(0 .. indices.len() as u32, 0, 0 .. 1);  
+        self.pass.draw_indexed(0..indices.len() as u32, 0, 0..1);
     }
-
 
     pub fn draw_result(&mut self, mesh: RenderResult) {
         if mesh.indices.len() > 0 {
@@ -105,7 +104,6 @@ impl <'a, 'b>RenderPass<'a, 'b> {
         }
     }
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Window
@@ -136,7 +134,6 @@ impl Window {
     }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////
 // Main Application logic
 ///////////////////////////////////////////////////////////////////////////
@@ -145,23 +142,21 @@ pub struct App;
 
 impl App {
     pub fn new() -> App {
-       App
+        App
     }
 
     pub fn init<E: Base>(&mut self, title: &str) {
-
         env_logger::init();
         let window_event_loop = EventLoop::new();
 
         #[cfg(not(feature = "gl"))]
         let (_window, instance, hidpi_factor, size, surface) = {
-
-          let window = WindowBuilder::new()
+            let window = WindowBuilder::new()
                 .with_title(title)
                 .with_resizable(true)
                 .build(&window_event_loop)
                 .unwrap();
-            
+                
             let hidpi_factor = window.hidpi_factor();
             let size = window.inner_size().to_physical(hidpi_factor);
 
@@ -171,7 +166,7 @@ impl App {
             (window, instance, hidpi_factor, size, surface)
         };
 
-      #[cfg(feature = "gl")]
+        #[cfg(feature = "gl")]
         let (_window, instance, hidpi_factor, size, surface) = {
             let wb = winit::WindowBuilder::new();
             let cb = wgpu::glutin::ContextBuilder::new().with_vsync(true);
@@ -204,7 +199,7 @@ impl App {
             limits: wgpu::Limits::default(),
         });
 
-         let mut sc_desc = wgpu::SwapChainDescriptor {
+        let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: size.width.round() as u32,
@@ -214,8 +209,7 @@ impl App {
 
         let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-
-        let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
+        let default_pipeline: shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
         let mut window = Window::new(sc_desc.width, sc_desc.height);
         let mut input = Event::new();
         let mut example = E::init(&mut window);
@@ -228,7 +222,7 @@ impl App {
         //         sc_desc.height = physical.height.round() as u32;
         //         swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-         window_event_loop.run(move |event, _, control_flow| {
+        window_event_loop.run(move |event, _, control_flow| {
             *control_flow = if cfg!(feature = "metal-auto-capture") {
                 ControlFlow::Exit
             } else {
@@ -240,28 +234,28 @@ impl App {
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;
                     }
-                    _ => {
-                        example.update(&input)
-                    },
-                }
+                    _ => example.update(&input),
+                },
                 event::Event::EventsCleared => {
                     let frame = swap_chain.get_next_texture();
-                    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+                    let mut encoder =
+                        device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
                     {
-                        let mut render_pass: RenderPass = RenderPass::create(&frame, &mut encoder, &device);
-                        render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
+                        let mut render_pass: RenderPass =
+                            RenderPass::create(&frame, &mut encoder, &device);
+
+                        render_pass.setup(
+                            &default_pipeline.render_pipeline,
+                            &default_pipeline.bind_group,
+                        );
                         example.render(&mut window, &mut render_pass);
                     }
 
                     device.get_queue().submit(&[encoder.finish()]);
-                },
-                _ => (),  
+                }
+                _ => (),
             }
-            });
-        }
+        });
+    }
 }
-
-
-
-

@@ -20,14 +20,14 @@ impl Widget {
              entries: froggy::Storage::new(),
          };
 
-        let node_pointer: froggy::Pointer<Node> = widget.entries.create(node_element);
+        widget.entries.create(node_element);
 
         widget
     }
 
 
-    pub fn add_child(&mut self, parentId: &str, id: &str, element: Box<dyn Element>) -> &mut Self {
-        let parent_node:froggy::Pointer<Node> = self.get_node(&parentId);
+    pub fn add_child(&mut self, parent_id: &str, id: &str, element: Box<dyn Element>) -> &mut Self {
+        let parent_node:froggy::Pointer<Node> = self.get_node(&parent_id);
 
         let node_element:Node = Node {
             id: String::from(id),
