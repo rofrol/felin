@@ -1,4 +1,3 @@
-
 use log::info;
 use wgpu::winit::{
     ElementState,
@@ -12,15 +11,8 @@ use wgpu::winit::{
 use crate::gui;
 use crate::definitions::{Vertex, RenderResult};
 
+pub mod event_state;
 pub mod shape2d;
-
-#[allow(dead_code)]
-pub fn cast_slice<T>(data: &[T]) -> &[u8] {
-    use std::mem::size_of;
-    use std::slice::from_raw_parts;
-
-    unsafe { from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<T>()) }
-}
 
 #[allow(dead_code)]
 pub enum ShaderStage {
@@ -31,7 +23,7 @@ pub enum ShaderStage {
 
 pub trait Base {
     fn init(window:&mut Window) -> Self;
-    fn update(&mut self, event: wgpu::winit::WindowEvent);
+    fn update(&mut self, event: &event_state::Event);
     fn render(&mut self, window:&mut Window, rpass: &mut RenderPass);
 }
 
@@ -117,15 +109,18 @@ impl <'a, 'b>RenderPass<'a, 'b> {
 }
 
 
+///////////////////////////////////////////////////////////////////////////
+// Window
+///////////////////////////////////////////////////////////////////////////
+
 pub struct Window {
     pub width: u32,
     pub height: u32,
     pub clear_color: wgpu::Color,
 }
 
-
 impl Window {
-    pub fn init(width: u32, height: u32) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         Self {
             width,
             height,
@@ -215,7 +210,7 @@ impl App {
             limits: wgpu::Limits::default(),
         });
 
-        let mut sc_desc = wgpu::SwapChainDescriptor {
+         let mut sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: size.width.round() as u32,
@@ -227,11 +222,14 @@ impl App {
         info!("Initializing the example...");
 
         let mut default_pipeline:shape2d::Pipeline = shape2d::Pipeline::new(&device, &sc_desc);
-        let mut window = Window::init(sc_desc.width, sc_desc.height);
-
+        let mut window = Window::new(sc_desc.width, sc_desc.height);
+        let mut window_event: event_state::Event = event_state::Event::new();
         let mut example = E::init(&mut window);
 
-        info!("Entering render loop...");
+        ///////////////////////////////////////////////////////////////////////////
+        // Render loop
+        ///////////////////////////////////////////////////////////////////////////
+
         let mut running = true;
         while running {
             events_loop.poll_events(|event| match event {
@@ -243,45 +241,36 @@ impl App {
                     info!("Resizing to {:?}", physical);
                     sc_desc.width = physical.width.round() as u32;
                     sc_desc.height = physical.height.round() as u32;
-
                     swap_chain = device.create_swap_chain(&surface, &sc_desc);
-  
                 }
                 Event::WindowEvent { event, .. } => match event {
-                    WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                virtual_keycode: Some(VirtualKeyCode::Escape),
-                                state: ElementState::Pressed,
-                                ..
-                            },
-                        ..
-                    }
+                    // WindowEvent::MouseInput => {
+                    //     if event.state == ElementState::Pressed {
+                    //         window_event.mouse.button_pressed(element.button);
+                    //     } else {
+                    //         window_event.mouse.button_released(element.button);
+                    //     }
+                    // }
                     | WindowEvent::CloseRequested => {
                         running = false;
                     }
                     _ => {
-                        example.update(event);
+                        example.update(&window_event);
                     }
                 },
                 _ => (),
             });
 
             let frame = swap_chain.get_next_texture();
-
             let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
             {
                 let mut render_pass: RenderPass = RenderPass::create(&frame, &mut encoder, &device);
-
                 render_pass.setup(&default_pipeline.render_pipeline, &default_pipeline.bind_group);
-
                 example.render(&mut window, &mut render_pass);
             }
 
             device.get_queue().submit(&[encoder.finish()]);   
-        
-          
             running &= !cfg!(feature = "metal-auto-capture");
         }
     }
