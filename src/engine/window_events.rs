@@ -40,9 +40,24 @@ impl Mouse {
     }
 }
 
+
+#[derive(Debug)]
+pub struct Keyboard {
+    pub keys_pressed: HashSet<usize>,
+}
+
+impl Keyboard {
+      pub fn new() -> Keyboard {
+        Keyboard {
+            keys_pressed: HashSet::new(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Event {
     pub mouse: Mouse,
+    pub keyboard: Keyboard,
     pub dpi_factor: f64,
     pub resolution: (u32, u32),
 }
@@ -51,6 +66,7 @@ impl Event {
     pub fn new() -> Event {
         Event {
             mouse: Mouse::new(),
+            keyboard: Keyboard::new(),
             dpi_factor: 1.0,
             resolution: (1, 1),
         }
@@ -59,21 +75,19 @@ impl Event {
     pub fn handle_event(&mut self, event: WindowEvent) {
         match event {
             WindowEvent::KeyboardInput { input, .. } => {
-                // if let Some(keycode) = input.virtual_keycode {
-                //     match input.state {
-                //         ElementState::Pressed => {
-                //             self.key_held[keycode as usize] = true;
-                //             self.key_actions.push(KeyAction::Pressed(keycode));
-                //             if let VirtualKeyCode::Back = keycode {
-                //                 self.text.push(TextChar::Back);
-                //             }
-                //         }
-                //         ElementState::Released => {
-                //             self.key_held[keycode as usize] = false;
-                //             self.key_actions.push(KeyAction::Released(keycode));
-                //         }
-                //     }
-                // }
+                if let Some(keycode) = input.virtual_keycode {
+                    match input.state {
+                        ElementState::Pressed => {
+                            self.keyboard.keys_pressed.insert(keycode as usize);
+                            // if let VirtualKeyCode::Back = keycode {
+                            //     self.text.push(TextChar::Back);
+                            // }
+                        }
+                        ElementState::Released => {
+                            self.keyboard.keys_pressed.remove(&(keycode as usize));
+                        }
+                    }
+                }
             }
             WindowEvent::ReceivedCharacter(c) => {
                 // if c != '\x08' && c != '\r' && c != '\n' {

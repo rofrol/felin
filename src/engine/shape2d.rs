@@ -1,6 +1,5 @@
 use wgpu;
 use cgmath;
-use std::{mem};
 use cgmath::prelude::*;
 use crate::engine::{ShaderStage, load_glsl};
 use crate::definitions::{Vertex, OPENGL_TO_WGPU_MATRIX};

@@ -155,7 +155,7 @@ impl App {
         let window_event_loop = EventLoop::new();
 
         #[cfg(not(feature = "gl"))]
-        let (_window, instance, hidpi_factor, size, surface) = {
+        let (_window, hidpi_factor, size, surface) = {
             let window = WindowBuilder::new()
                 .with_title(title)
                 .with_resizable(true)
@@ -163,38 +163,15 @@ impl App {
                 .unwrap();
             let hidpi_factor = window.hidpi_factor();
             let size = window.inner_size().to_physical(hidpi_factor);
+            let surface = wgpu::Surface::create(&window);
 
-            let instance = wgpu::Instance::new();
-            let surface = instance.create_surface(&window);
-
-            (window, instance, hidpi_factor, size, surface)
+            (window, hidpi_factor, size, surface)
         };
 
-        #[cfg(feature = "gl")]
-        let (_window, instance, hidpi_factor, size, surface) = {
-            let wb = winit::WindowBuilder::new();
-            let cb = wgpu::glutin::ContextBuilder::new().with_vsync(true);
-            let context = cb.build_windowed(wb, &event_loop).unwrap();
-            context.window().set_title(title);
-
-            let hidpi_factor = context.window().hidpi_factor();
-            let size = context
-                .window()
-                .get_inner_size()
-                .unwrap()
-                .to_physical(hidpi_factor);
-
-            let (context, window) = unsafe { context.make_current().unwrap().split() };
-
-            let instance = wgpu::Instance::new(context);
-            let surface = instance.get_surface();
-
-            (window, instance, hidpi_factor, size, surface)
-        };
-
-        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
-            power_preference: wgpu::PowerPreference::LowPower,
-        });
+         let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::LowPower,
+                backends: wgpu::BackendBit::PRIMARY,
+            }).unwrap();
 
         let mut device = adapter.request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions {
