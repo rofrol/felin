@@ -124,6 +124,11 @@ impl Window {
         }
     }
 
+    pub fn update_size(&mut self, width: u32, height: u32) {
+        self.width = width;
+        self.height = height;
+    }
+
     pub fn set_color(&mut self, color: [f64; 4]) {
         self.clear_color = wgpu::Color {
             r: color[0],
@@ -217,30 +222,31 @@ impl App {
         // Render loop
         ///////////////////////////////////////////////////////////////////////////
 
-
         window_event_loop.run(move |event, _, control_flow| {
             *control_flow = if cfg!(feature = "metal-auto-capture") {
                 ControlFlow::Exit
             } else {
                 ControlFlow::Poll
             };
-
             match event {
                 event::Event::WindowEvent {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
                     let physical = size.to_physical(hidpi_factor);
-                   
                     sc_desc.width = physical.width.round() as u32;
                     sc_desc.height = physical.height.round() as u32;
                     swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                    window.update_size(sc_desc.width, sc_desc.height);
                 }
                 event::Event::WindowEvent { event, .. } => match event {
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;
                     }
-                    _ => example.update(&input),
+                    _ => {
+                        input.handle_event(event);
+                        example.update(&input)
+                    }
                 },
                 event::Event::EventsCleared => {
                     let frame = swap_chain.get_next_texture();
