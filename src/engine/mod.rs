@@ -198,7 +198,7 @@ impl App {
             limits: wgpu::Limits::default(),
         });
 
-        let sc_desc = wgpu::SwapChainDescriptor {
+        let mut sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8Unorm,
             width: size.width.round() as u32,
@@ -216,10 +216,7 @@ impl App {
         ///////////////////////////////////////////////////////////////////////////
         // Render loop
         ///////////////////////////////////////////////////////////////////////////
-        //   let physical = size.to_physical(hidpi_factor);
-        //         sc_desc.width = physical.width.round() as u32;
-        //         sc_desc.height = physical.height.round() as u32;
-        //         swap_chain = device.create_swap_chain(&surface, &sc_desc);
+
 
         window_event_loop.run(move |event, _, control_flow| {
             *control_flow = if cfg!(feature = "metal-auto-capture") {
@@ -229,6 +226,16 @@ impl App {
             };
 
             match event {
+                event::Event::WindowEvent {
+                    event: WindowEvent::Resized(size),
+                    ..
+                } => {
+                    let physical = size.to_physical(hidpi_factor);
+                   
+                    sc_desc.width = physical.width.round() as u32;
+                    sc_desc.height = physical.height.round() as u32;
+                    swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                }
                 event::Event::WindowEvent { event, .. } => match event {
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;
