@@ -23,27 +23,36 @@ use engine::gui::{
     elements::{Triangle, Circle},
 };
 
-pub struct Main;
+
+pub struct Main {
+    circle: Circle,
+}
 
 impl Base for Main {
     fn init(_window: &mut Window) -> Self {
-        Main
-    }
 
-    fn update(&mut self, event: &Event) {
-        
-    }
-    
-    fn render(&mut self, _window: &mut Window, rpass: &mut RenderPass) {
-        let circle = Circle::new().render();
-        let circle2 = Circle::new()
+
+    let circle = Circle::new()
         .x(300.0)
         .y(300.0)
         .radius(20.0)
-        .render();
+        .build();
+        
+        Main {
+            circle,
+        }
+    }
 
-        rpass.draw_result(circle);
-        rpass.draw_result(circle2);
+
+    fn update(&mut self, event: &Event) {
+        if event.mouse.on_left_right() {
+            self.circle.x(event.mouse.x());
+            self.circle.y(event.mouse.y());
+        }
+    }
+    
+    fn render(&mut self, _window: &mut Window, rpass: &mut RenderPass) {    
+        self.circle.render(rpass);
     }
 }
 
