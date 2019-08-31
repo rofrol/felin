@@ -13,8 +13,6 @@ To try it, include master branch on your cargo
 
 
 ```rust
-#![feature(box_syntax)]
-
 
 use engine::{Base, App, RenderPass, Window, Event };
 use engine::prelude::*;
