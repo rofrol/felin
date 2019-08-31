@@ -145,15 +145,16 @@ impl Pipeline {
     }
 
     fn generate_matrix(width:f32, height:f32) ->  cgmath::Matrix4<f32> { 
-         cgmath::Ortho::<f32> {
+         let matrix: cgmath::Matrix4<f32> = cgmath::Ortho::<f32> {
             left: 0.0,
             right: width,
             bottom: height,
             top: 0.0,
             near: -1.0,
             far: 1.0,
-        }
-        .into()
+        }.into();
+        
+        OPENGL_TO_WGPU_MATRIX * matrix
     }
 }
 
