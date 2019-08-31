@@ -38,6 +38,14 @@ impl Mouse {
     pub fn button_released(&mut self, button: Button) {
         self.pressed_buttons.remove(&button);
     }
+
+    pub fn x(&self) -> f32 {
+        self.position[0] as f32
+    }
+
+    pub fn y(&self) -> f32 {
+        self.position[1] as f32
+    }
 }
 
 

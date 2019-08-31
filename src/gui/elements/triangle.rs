@@ -19,7 +19,7 @@ impl Triangle {
 }
 
 impl Element for Triangle {
-    fn render(&self, rpass: &mut RenderPass) {
+    fn render(&mut self, rpass: &mut RenderPass) {
         let vertex_data = vec![
             Vertex::new([10.0, 90.0], [1.0, 1.0, 1.0, 1.0]),
             Vertex::new([110.0, 90.50], [1.0, 1.0, 1.0, 1.0]),

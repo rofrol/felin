@@ -2,7 +2,6 @@ use cgmath::Matrix4;
 use froggy;
 
 pub use crate::engine::RenderPass;
-
 pub use crate::gui::Widget;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -30,6 +29,13 @@ impl Vertex {
             in_color,
         }
     }
+    pub fn x(&self) -> f32 {
+        self.in_position[0]
+    }
+
+    pub fn y(&self) -> f32 {
+        self.in_position[1]
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -37,7 +43,7 @@ impl Vertex {
 ///////////////////////////////////////////////////////////////////////////
 
 pub trait Element {
-    fn render(&self, rpass: &mut RenderPass);
+    fn render(&mut self, rpass: &mut RenderPass);
 }
 
 pub struct Node {
