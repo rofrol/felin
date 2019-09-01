@@ -5,7 +5,7 @@ use winit::event::{self, ElementState, MouseScrollDelta, WindowEvent};
 
 #[derive(Debug)]
 pub struct Mouse {
-    pub position: Point2<u32>,
+    pub position: Point2<f32>,
     pressed_buttons: HashSet<Button>,
     scroll_diff: f32,
 }
@@ -13,7 +13,7 @@ pub struct Mouse {
 impl Mouse {
     pub fn new() -> Mouse {
         Mouse {
-            position: Point2::new(0, 0),
+            position: Point2::new(0.0, 0.0),
             pressed_buttons: HashSet::new(),
             scroll_diff: 0.0,
         }
@@ -28,7 +28,7 @@ impl Mouse {
     }
 
     pub fn set_position(&mut self, x: u32, y: u32) {
-        self.position = Point2::new(x, y);
+        self.position = Point2::new(x as f32, y as f32);
     }
 
     pub fn button_pressed(&mut self, button: Button) {
@@ -40,11 +40,11 @@ impl Mouse {
     }
 
     pub fn x(&self) -> f32 {
-        self.position[0] as f32
+        self.position[0]
     }
 
     pub fn y(&self) -> f32 {
-        self.position[1] as f32
+        self.position[1]
     }
 }
 

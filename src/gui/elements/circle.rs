@@ -4,8 +4,15 @@ use lyon::tessellation;
 use lyon::tessellation::basic_shapes::*;
 use lyon::tessellation::geometry_builder::{BuffersBuilder, VertexBuffers};
 use lyon::tessellation::FillOptions;
-use collision::primitive::ConvexPolygon;
-use cgmath::{Point2};
+
+use collision::{
+    prelude::*,
+    primitive,
+    Ray2,
+};
+
+use cgmath::{self, Point2, Vector2};
+use cgmath::prelude::*;
 
 #[derive(Debug)]
 pub struct Circle {
@@ -13,7 +20,7 @@ pub struct Circle {
     y: f32,
     radius: f32,
     color: [f32; 4],
-    vertices: Vec<Vertex>,
+    collider: Option<primitive::Circle<f32>>,
 }
 
 impl Circle {
@@ -23,7 +30,7 @@ impl Circle {
             x: 100.0,
             y: 100.0,
             color: [1.0, 1.0, 1.0, 1.0],
-            vertices: Vec::new(),
+            collider: None,
         }
     }
 
@@ -42,11 +49,6 @@ impl Circle {
         self
     }
 
-    pub fn get_collider(&self) -> ConvexPolygon<f32> {
-        let collider_verts: Vec<_> = self.vertices.clone().into_iter().map( |vert| Point2::new(vert.x(), vert.y())).collect();
-        ConvexPolygon::new(collider_verts)
-    }
-
     pub fn init(&mut self) -> &mut Self {
         self
     }
@@ -57,8 +59,18 @@ impl Circle {
             x:self.x,
             y:self.y,
             color:self.color,
-            vertices:self.vertices.clone(),
+            collider: None,
         }
+    }
+
+    pub fn on_click(&self, point: Point2<f32>) -> bool {
+        if let Some(collider) = &self.collider {
+            // let ray = Ray2::new(point, Vector2::new(0., 0.));
+            // let transform: cgmath::Matrix4<f32> = cgmath::Matrix4::identity();
+            // println!("{:?}", collider.intersection_transformed(&ray, &transform));
+        }
+
+        false
     }
 }
 
@@ -80,7 +92,7 @@ impl Element for Circle {
         )
         .unwrap();
 
-        self.vertices = mesh.vertices.clone();
+        self.collider = Some(primitive::Circle::new(self.radius));
         
         rpass.draw_indexed(mesh.vertices, mesh.indices);
     }
