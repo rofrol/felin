@@ -27,25 +27,25 @@ pub struct Main {
 }
 
 impl Base for Main {
-        fn init(_window: &mut Window) -> Self {
+    fn init(_window: &mut Window) -> Self {
 
-    let circle = Circle::new()
-        .x(300.0)
-        .y(300.0)
-        .radius(20.0)
-        .build();
+        let circle = Circle::new()
+            .x(300.0)
+            .y(300.0)
+            .radius(20.0)
+            .build();
 
-    let rectangle = Rectangle::new()
-        .x(100.0)
-        .y(100.0)
-        .width(150.0)
-        .height(80.0)
-        .build();
-        
-        Main {
-            circle,
-            rectangle,
-        }
+        let rectangle = Rectangle::new()
+            .x(100.0)
+            .y(100.0)
+            .width(150.0)
+            .height(80.0)
+            .build();
+
+            Main {
+                circle,
+                rectangle,
+            }
     }
 
     fn update(&mut self, event: &Event) {
