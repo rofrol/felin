@@ -5,55 +5,57 @@ use lyon::tessellation::basic_shapes::*;
 use lyon::tessellation::geometry_builder::{BuffersBuilder, VertexBuffers};
 use lyon::tessellation::FillOptions;
 
+use cgmath::{self, prelude::*, Point2, Rad, Rotation2, Vector2};
 use collision::{prelude::*, primitive, Ray2};
 
-use cgmath::{self, prelude::*, Point2, Rad, Rotation2, Vector2};
-
 #[derive(Debug)]
-pub struct Circle {
-    pub x: f32,
-    pub y: f32,
-    pub radius: f32,
-    pub color: [f32; 4],
-    pub collider: Option<primitive::Circle<f32>>,
+pub struct Rectangle {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    color: [f32; 4],
+    collider: Option<primitive::Rectangle<f32>>,
 }
 
-impl Circle {
-    pub fn new() -> Circle {
-        Circle {
-            radius: 50.0,
+impl Rectangle {
+    pub fn new() -> Rectangle {
+        Rectangle {
             x: 100.0,
             y: 100.0,
+            width: 100.0,
+            height: 100.0,
             color: [1.0, 1.0, 1.0, 1.0],
             collider: None,
         }
     }
 
-
-    pub fn x(&mut self, x: f32) -> &mut Circle {
+    pub fn x(&mut self, x: f32) -> &mut Rectangle {
         self.x = x;
         self
     }
 
-    pub fn radius(&mut self, radius: f32) -> &mut Circle {
-        self.radius = radius;
-        self
-    }
-
-    pub fn y(&mut self, y: f32) -> &mut Circle {
+    pub fn y(&mut self, y: f32) -> &mut Rectangle {
         self.y = y;
         self
     }
 
-    pub fn init(&mut self) -> &mut Self {
+    pub fn width(&mut self, width: f32) -> &mut Rectangle {
+        self.width = width;
         self
     }
 
-    pub fn build(&self) -> Circle {
-        Circle {
-            radius: self.radius,
+    pub fn height(&mut self, height: f32) -> &mut Rectangle {
+        self.height = height;
+        self
+    }
+
+    pub fn build(&self) -> Rectangle {
+        Rectangle {
             x: self.x,
             y: self.y,
+            height: self.height,
+            width: self.width,
             color: self.color,
             collider: None,
         }
@@ -66,7 +68,7 @@ impl Circle {
                 cgmath::Decomposed {
                     scale: 1.0,
                     rot: Rotation2::from_angle(Rad(0.0)),
-                    disp: Vector2::new(self.x, self.y),
+                    disp: Vector2::new(self.x + (self.width / 2.0), self.y + (self.height / 2.0)),
                 };
             if collider.compute_bound().transform(&transform).contains(&point) {
                 collider_result = true
@@ -76,15 +78,13 @@ impl Circle {
     }
 }
 
-impl Element for Circle {
+impl Element for Rectangle {
     fn render(&mut self, rpass: &mut RenderPass) {
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
-        
         //Draw vertices with Lyon
-        fill_circle(
-            point(self.x, self.y),
-            self.radius,
+        fill_rectangle(
+            &rect(self.x, self.y, self.width, self.height),
             &fill_options,
             &mut BuffersBuilder::new(&mut mesh, |vertex: tessellation::FillVertex| Vertex {
                 in_position: vertex.position.to_array(),
@@ -93,7 +93,7 @@ impl Element for Circle {
         )
         .unwrap();
 
-        self.collider = Some(primitive::Circle::new(self.radius));
+        self.collider = Some(primitive::Rectangle::new(self.width, self.height));
         rpass.draw_indexed(mesh.vertices, mesh.indices);
     }
 }
