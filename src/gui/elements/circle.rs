@@ -33,22 +33,23 @@ impl Circle {
         }
     }
 
-    pub fn x(&mut self, x: f32) -> &mut Circle {
+    pub fn x(&mut self, x: f32) -> &mut Self {
         self.x = x;
         self
     }
 
-    pub fn radius(&mut self, radius: f32) -> &mut Circle {
+    pub fn radius(&mut self, radius: f32) -> &mut Self {
         self.radius = radius;
         self
     }
 
-    pub fn y(&mut self, y: f32) -> &mut Circle {
-        self.y = y;
+    pub fn color(&mut self, color: [f32; 4]) -> &mut Self {
+        self.color = color;
         self
     }
 
-    pub fn init(&mut self) -> &mut Self {
+    pub fn y(&mut self, y: f32) -> &mut Self{
+        self.y = y;
         self
     }
 

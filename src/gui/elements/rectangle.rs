@@ -36,24 +36,29 @@ impl Rectangle {
         }
     }
 
-    pub fn x(&mut self, x: f32) -> &mut Rectangle {
+    pub fn x(&mut self, x: f32) -> &mut Self {
         self.x = x;
         self
     }
 
-    pub fn y(&mut self, y: f32) -> &mut Rectangle {
+    pub fn y(&mut self, y: f32) -> &mut Self {
         self.y = y;
         self
     }
 
-    pub fn width(&mut self, width: f32) -> &mut Rectangle {
+    pub fn width(&mut self, width: f32) -> &mut Self {
         self.width = width;
         self
     }
 
-    pub fn height(&mut self, height: f32) -> &mut Rectangle {
+    pub fn height(&mut self, height: f32) -> &mut Self {
         self.height = height;
         self
+    }
+
+    pub fn color(&mut self, color: [f32; 4]) -> &mut Self {
+        self.color = color;
+        self 
     }
 
     pub fn build(&self) -> Rectangle {
