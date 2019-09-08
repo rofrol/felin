@@ -3,11 +3,10 @@
 This is an exercise repo for myself to learn how to handle vulkan and 2D graphics, it use's `wgpu-rs` as graphics backend.
 
 
-To try it, include master branch on your cargo
+To try it, include master branch on your cargo.toml dependencies
 
 ```rust
-[dependencies.engine]
-{ git = "https://github.com/tonis2/wgpu-2d", branch = "master" }
+engine =  { git = "https://github.com/tonis2/wgpu-2d", branch = "master" }
 
 ```
 
