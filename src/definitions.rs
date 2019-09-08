@@ -1,7 +1,7 @@
-use cgmath::Matrix4;
+use cgmath::{self, prelude::*, Matrix4, Point2};
 use froggy;
 
-pub use crate::engine::RenderPass;
+pub use crate::engine::Frame;
 pub use crate::gui::Widget;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -43,7 +43,7 @@ impl Vertex {
 ///////////////////////////////////////////////////////////////////////////
 
 pub trait Element {
-    fn render(&mut self, rpass: &mut RenderPass);
+    fn render(&mut self) -> Mesh;
 }
 
 pub struct Node {
@@ -53,12 +53,17 @@ pub struct Node {
     pub children: Vec<froggy::Pointer<Node>>,
 }
 
-///////////////////////////////////////////////////////////////////////////
-// Rendering
-///////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug)]
-pub struct RenderResult {
+#[derive(Clone, Debug)]
+pub struct Mesh {
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
+    pub transform: cgmath::Matrix4<f32>,
+    pub update: bool,
+}
+
+impl Mesh {
+    pub fn require_update(&self) -> bool {
+        self.update
+    }
 }
