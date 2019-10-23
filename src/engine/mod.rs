@@ -100,7 +100,7 @@ pub fn App<E: Base>(title: &str) {
     })
     .unwrap();
 
-    let mut device = adapter.request_device(&wgpu::DeviceDescriptor {
+    let (device, mut queue) = adapter.request_device(&wgpu::DeviceDescriptor {
         extensions: wgpu::Extensions {
             anisotropic_filtering: false,
         },
@@ -162,8 +162,8 @@ pub fn App<E: Base>(title: &str) {
                     example.render(&mut window, &mut frame);
                 }
 
-                default_pipeline.render(&frame, &mut encoder, &mut device);
-                device.get_queue().submit(&[encoder.finish()]);
+                default_pipeline.render(&frame, &mut encoder, &device);
+                queue.submit(&[encoder.finish()]);
             }
             _ => (),
         }
