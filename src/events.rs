@@ -1,7 +1,7 @@
 use cgmath::Point2;
 use std::collections::HashSet;
 use winit::event::MouseButton as Button;
-use winit::event::{self, ElementState, MouseScrollDelta, WindowEvent};
+use winit::event::{ElementState, MouseScrollDelta, WindowEvent};
 
 #[derive(Debug)]
 pub struct Mouse {
@@ -48,26 +48,27 @@ impl Mouse {
     }
 }
 
-
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Keyboard {
     pub keys_pressed: HashSet<usize>,
 }
 
 impl Keyboard {
-      pub fn new() -> Keyboard {
+    pub fn new() -> Keyboard {
         Keyboard {
             keys_pressed: HashSet::new(),
         }
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Event {
     pub mouse: Mouse,
     pub keyboard: Keyboard,
     pub dpi_factor: f64,
-    pub resolution: (u32, u32),
+    pub resized: bool,
 }
 
 impl Event {
@@ -76,7 +77,7 @@ impl Event {
             mouse: Mouse::new(),
             keyboard: Keyboard::new(),
             dpi_factor: 1.0,
-            resolution: (1, 1),
+            resized: false,
         }
     }
 
@@ -97,7 +98,7 @@ impl Event {
                     }
                 }
             }
-            WindowEvent::ReceivedCharacter(c) => {
+            WindowEvent::ReceivedCharacter(_c) => {
                 // if c != '\x08' && c != '\r' && c != '\n' {
                 //     self.text.push(TextChar::Char(c));
                 // }
@@ -133,13 +134,11 @@ impl Event {
                     }
                 }
             }
-            WindowEvent::Resized(resolution) => {
-                self.resolution = resolution.to_physical(self.dpi_factor).into();
-            }
-            WindowEvent::HiDpiFactorChanged(factor) => {
-                self.dpi_factor = factor;
-            }
             _ => {}
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.resized = false;
     }
 }

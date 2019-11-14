@@ -1,21 +1,22 @@
 [package]
-name = "engine"
+name = "felin"
 version = "0.1.0"
 authors = ["tonis2 <tonis.anton18@gmail.com>"]
 edition = "2018"
 
+[lib]
+
 [dependencies]
-cgmath = "0.17"
-env_logger = "0.6"
+cgmath = "*"
 glsl-to-spirv = "0.1"
-log = "0.4"
-uuid = { version = "0.7", features = ["serde", "v4"] }
+image = "*"
+winit = "0.20.0-alpha3"
+rand = "0.7.0"
 froggy = "*"
 lyon = "*"
-winit = "0.20.0-alpha3"
 collision = "*"
+uuid = { version = "0.7", features = ["serde", "v4"] }
+wgpu = "0.4.0"
 
-[dependencies.wgpu]
-git = "https://github.com/gfx-rs/wgpu-rs.git"
-rev = "012d08d64de924da93289c2b51fb06b22d7348cf"
+
 
