@@ -10,8 +10,6 @@ impl Base for Main {
         let images = pipeline.create_textures_array(
             system,
             vec![
-                "examples/slider/assets/arrow_left.png",
-                "examples/slider/assets/arrow_right.png",
                 "examples/slider/assets/image1.jpg",
                 "examples/slider/assets/image2.jpg",
                 "examples/slider/assets/image3.jpg",
