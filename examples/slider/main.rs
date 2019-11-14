@@ -7,7 +7,17 @@ pub struct Main {
 impl Base for Main {
     fn init(system: &mut System) -> Self {
         let mut pipeline = pipeline::default::Pipeline::new(system);
-        let buttons = pipeline.create_textures_array(system, vec!["examples/slider/assets/arrow_left.png", "examples/slider/assets/arrow_right.png"]);
+        let images = pipeline.create_textures_array(
+            system,
+            vec![
+                "examples/slider/assets/arrow_left.png",
+                "examples/slider/assets/arrow_right.png",
+                "examples/slider/assets/image1.jpg",
+                "examples/slider/assets/image2.jpg",
+                "examples/slider/assets/image3.jpg",
+                "examples/slider/assets/image4.jpg",
+            ],
+        );
 
         Main { pipeline }
     }
