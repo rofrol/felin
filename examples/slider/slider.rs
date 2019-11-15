@@ -1,50 +1,78 @@
-use felin::definitions::Elements;
+use felin::definitions::{Elements, Mesh};
 use felin::mesh::{Image, Rectangle};
 use felin::utils::{Batch, Grid, Node, NodeWalker};
 use felin::Event;
 
+use winit::window::WindowBuilder;
+
+#[allow(dead_code)]
 pub struct Slider {
     nodes: NodeWalker,
-    pub batch: Batch,
+    slide: i32,
+    width: f32,
+    height: f32,
+    pub container: Batch,
+    pub gallery: Mesh,
 }
 
+#[allow(dead_code)]
 impl Slider {
-    pub fn new() -> Self {
-        let mut tree = NodeWalker::create();
-
+    pub fn build(&mut self) {
         let container_rect = Rectangle::new()
             .x(200.0)
             .y(200.0)
             .color([1.0, 1.0, 1.0, 1.0])
-            .width(800.0)
-            .height(600.0)
+            .width(self.width)
+            .height(self.height)
             .build();
 
-        let container = tree.add(Node {
-            grid: Some(Grid::new(container_rect.width, container_rect.height, "12/12")),
+        let container = self.nodes.add(Node {
+            grid: Some(Grid::new(
+                container_rect.width,
+                container_rect.height,
+                "12/12",
+            )),
             body: Elements::Rectangle(container_rect),
             parent: None,
             area: None,
         });
 
-        tree.add(Node {
+        self.nodes.add(Node {
             grid: None,
             body: Elements::Image(Image::new().use_texture(0).build()),
             parent: Some(container.clone()),
-            area: Some("1/4/5/8".to_string()),
+            area: Some("0/1/5/6".to_string()),
         });
 
-
-        tree.add(Node {
+        self.nodes.add(Node {
             grid: None,
             body: Elements::Image(Image::new().use_texture(1).build()),
             parent: Some(container.clone()),
-            area: Some("8/12/5/8".to_string()),
+            area: Some("11/12/5/6".to_string()),
         });
 
+        let gallery = self.nodes.add(Node {
+            grid: None,
+            body: Elements::Image(Image::new().use_texture(self.slide).build()),
+            parent: Some(container.clone()),
+            area: Some("2/10/1/10".to_string()),
+        });
+
+        self.container = self.nodes.get_batch();
+        self.gallery = self.nodes.get(&gallery).mesh();
+    }
+
+    pub fn new(window: &WindowBuilder) -> Self {
+        let mut tree = NodeWalker::create();
+        let window_params = window.window.inner_size.unwrap();
+
         Self {
-            batch: tree.get_batch(),
+            container: tree.get_batch(),
             nodes: tree,
+            width: window_params.width as f32,
+            height: window_params.height as f32,
+            gallery: Image::new().use_texture(0).build().mesh(),
+            slide: 1,
         }
     }
 }

@@ -241,6 +241,7 @@ impl Pipeline {
                 img.into_raw()
             })
             .collect::<Vec<_>>();
+     
 
         let texture_extent = wgpu::Extent3d {
             width: img_width,

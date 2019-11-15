@@ -1,5 +1,5 @@
 use super::batch::Batch;
-use crate::definitions::Elements;
+use crate::definitions::{Elements, Mesh};
 use crate::utils::Grid;
 
 //Single Node
@@ -15,6 +15,14 @@ pub struct Node {
 impl Node {
     pub fn get_grid(&mut self) -> Grid {
         self.grid.unwrap()
+    }
+
+    pub fn mesh(&mut self) -> Mesh {
+        return match self.body {
+            Elements::Rectangle(ref mut element) => element.mesh(),
+            Elements::Circle(ref mut element) => element.mesh(),
+            Elements::Image(ref mut element) => element.mesh(),
+        };
     }
 }
 
@@ -101,6 +109,10 @@ impl NodeWalker {
         } else {
             return self.tree.create(node);
         }
+    }
+
+    pub fn get(&mut self, pointer: &froggy::Pointer<Node>) -> Node {
+        self.tree[pointer].clone()
     }
 
     pub fn get_batch(&mut self) -> Batch {

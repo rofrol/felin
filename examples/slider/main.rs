@@ -1,6 +1,6 @@
 use felin::{app, pipeline, Base, Event, System};
 use slider::Slider;
-use winit::window::WindowBuilder;
+use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 mod slider;
 
@@ -8,16 +8,22 @@ pub struct Main {
     pipeline: pipeline::default::Pipeline,
     slider: Slider,
     buttons: wgpu::BindGroup,
+    images: wgpu::BindGroup,
 }
 
 impl Base for Main {
     fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
         let window = WindowBuilder::new()
             .with_title("title")
+            .with_inner_size(LogicalSize {
+                width: 1400.0,
+                height: 800.0,
+            })
             .with_resizable(true);
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
-        let slider = Slider::new();
+        let mut slider = Slider::new(&window);
+        slider.build();
 
         let buttons = pipeline.create_textures_array(
             system,
@@ -33,7 +39,6 @@ impl Base for Main {
                 "examples/slider/assets/image1.jpg",
                 "examples/slider/assets/image2.jpg",
                 "examples/slider/assets/image3.jpg",
-                "examples/slider/assets/image4.jpg",
             ],
         );
 
@@ -42,6 +47,7 @@ impl Base for Main {
                 pipeline,
                 slider,
                 buttons,
+                images,
             },
             window,
         )
@@ -73,9 +79,17 @@ impl Base for Main {
             self.pipeline.draw(
                 &mut pass,
                 &system,
-                &self.slider.batch.indices,
-                &self.slider.batch.vertices,
+                &self.slider.container.indices,
+                &self.slider.container.vertices,
                 Some(&self.buttons),
+            );
+
+            self.pipeline.draw(
+                &mut pass,
+                &system,
+                &self.slider.gallery.indices,
+                &self.slider.gallery.vertices,
+                Some(&self.images),
             );
         }
 
