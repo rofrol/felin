@@ -1,5 +1,6 @@
 use felin::{app, pipeline, Base, Event, System};
 use slider::Slider;
+use winit::window::WindowBuilder;
 
 mod slider;
 
@@ -10,7 +11,11 @@ pub struct Main {
 }
 
 impl Base for Main {
-    fn init(system: &mut System) -> Self {
+    fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
+        let window = WindowBuilder::new()
+            .with_title("title")
+            .with_resizable(true);
+
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let slider = Slider::new();
 
@@ -32,11 +37,14 @@ impl Base for Main {
             ],
         );
 
-        Main {
-            pipeline,
-            slider,
-            buttons,
-        }
+        (
+            Main {
+                pipeline,
+                slider,
+                buttons,
+            },
+            window,
+        )
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {

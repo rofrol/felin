@@ -17,8 +17,8 @@ use winit::{
 ///////////////////////////////////////////////////////////////////////////
 // Base trait for application
 ///////////////////////////////////////////////////////////////////////////
-pub trait Base: 'static {
-    fn init(system: &mut System) -> Self;
+pub trait Base: 'static + Sized {
+    fn init(system: &mut System) -> (Self, WindowBuilder);
     fn update(&mut self, system: &mut System, events: &Event);
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System);
 }
@@ -29,19 +29,6 @@ pub trait Base: 'static {
 
 pub fn app<E: Base>(title: &str) {
     let window_event_loop = EventLoop::new();
-
-    let (window, hidpi_factor, size, surface) = {
-        let window = WindowBuilder::new()
-            .with_title(title)
-            .with_resizable(true)
-            .build(&window_event_loop)
-            .unwrap();
-        let hidpi_factor = window.hidpi_factor();
-        let size = window.inner_size().to_physical(hidpi_factor);
-        let surface = wgpu::Surface::create(&window);
-
-        (window, hidpi_factor, size, surface)
-    };
 
     let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::LowPower,
@@ -59,23 +46,32 @@ pub fn app<E: Base>(title: &str) {
     let sc_desc = wgpu::SwapChainDescriptor {
         usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
         format: wgpu::TextureFormat::Bgra8Unorm,
-        width: size.width.round() as u32,
-        height: size.height.round() as u32,
+        width: 0,
+        height: 0,
         present_mode: wgpu::PresentMode::Vsync,
     };
-
-    let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     let mut system = System {
         device,
         screen_descriptor: sc_desc,
-        queue,
-        window,
+        queue
     };
 
-    let mut input_events = Event::new();
+    let (mut example, window_builder) = E::init(&mut system);
 
-    let mut example = E::init(&mut system);
+    let window = window_builder
+        .build(&window_event_loop)
+        .unwrap();
+
+    let hidpi_factor = window.hidpi_factor();
+    let size = window.inner_size().to_physical(hidpi_factor);
+    let surface = wgpu::Surface::create(&window);
+
+    system.screen_descriptor.width = size.width.round() as u32;
+    system.screen_descriptor.height = size.height.round() as u32;
+
+    let mut swap_chain = system.device.create_swap_chain(&surface, &system.screen_descriptor);
+    let mut input_events = Event::new();
 
     ///////////////////////////////////////////////////////////////////////////
     // Render loop

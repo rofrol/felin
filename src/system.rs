@@ -3,8 +3,7 @@ use crate::utils::OPENGL_TO_WGPU_MATRIX;
 pub struct System {
     pub device: wgpu::Device,
     pub screen_descriptor: wgpu::SwapChainDescriptor,
-    pub queue: wgpu::Queue,
-    pub window: winit::window::Window,
+    pub queue: wgpu::Queue
 }
 
 impl System {
