@@ -16,7 +16,7 @@ impl Base for Main {
         let window = WindowBuilder::new()
             .with_title("title")
             .with_inner_size(LogicalSize {
-                width: 1400.0,
+                width: 1500.0,
                 height: 800.0,
             })
             .with_resizable(true);

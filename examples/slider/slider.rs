@@ -17,9 +17,13 @@ pub struct Slider {
 
 #[allow(dead_code)]
 impl Slider {
+    pub fn update(&mut self, event: &Event) {
+        self.build();
+    }
+
     pub fn build(&mut self) {
         let container_rect = Rectangle::new()
-            .x(200.0)
+            .x((self.width as usize / 2) as f32)
             .y(200.0)
             .color([1.0, 1.0, 1.0, 1.0])
             .width(self.width)
