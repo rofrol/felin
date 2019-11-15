@@ -29,7 +29,9 @@ impl Base for Main {
             system,
             vec![
                 "examples/slider/assets/arrow_left.png",
+                "examples/slider/assets/arrow_left_active.png",
                 "examples/slider/assets/arrow_right.png",
+                "examples/slider/assets/arrow_right_active.png",
             ],
         );
 
@@ -54,6 +56,7 @@ impl Base for Main {
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
+        self.slider.update(&events);
         if events.resized {
             self.pipeline.resize(system);
         };
@@ -71,11 +74,17 @@ impl Base for Main {
                     resolve_target: None,
                     load_op: wgpu::LoadOp::Clear,
                     store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color::BLACK,
+                    clear_color: wgpu::Color {
+                        r: 1.0,
+                        g: 1.0,
+                        b: 1.0,
+                        a: 0.0,
+                    },
                 }],
                 depth_stencil_attachment: None,
             });
 
+         
             self.pipeline.draw(
                 &mut pass,
                 &system,
@@ -91,6 +100,7 @@ impl Base for Main {
                 &self.slider.gallery.vertices,
                 Some(&self.images),
             );
+
         }
 
         system.queue.submit(&[encoder.finish()]);

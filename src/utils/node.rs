@@ -10,6 +10,7 @@ pub struct Node {
     pub parent: Option<froggy::Pointer<Node>>,
     pub grid: Option<Grid>,
     pub area: Option<String>,
+    pub id: String,
 }
 
 impl Node {
@@ -54,26 +55,22 @@ impl NodeWalker {
 
             let x = match parent.body {
                 Elements::Rectangle(ref mut element) => {
-                    (element.x.clone() as usize + result.x as usize) as f32
+                    (element.x as usize + result.x as usize) as f32
                 }
                 Elements::Circle(ref mut element) => {
-                    (element.x.clone() as usize + result.x as usize) as f32
+                    (element.x as usize + result.x as usize) as f32
                 }
-                Elements::Image(ref mut element) => {
-                    (element.x.clone() as usize + result.x as usize) as f32
-                }
+                Elements::Image(ref mut element) => (element.x as usize + result.x as usize) as f32,
             };
 
             let y = match parent.body {
                 Elements::Rectangle(ref mut element) => {
-                    (element.y.clone() as usize + result.y as usize) as f32
+                    (element.y as usize + result.y as usize) as f32
                 }
                 Elements::Circle(ref mut element) => {
-                    (element.y.clone() as usize + result.y as usize) as f32
+                    (element.y as usize + result.y as usize) as f32
                 }
-                Elements::Image(ref mut element) => {
-                    (element.y.clone() as usize + result.y as usize) as f32
-                }
+                Elements::Image(ref mut element) => (element.y as usize + result.y as usize) as f32,
             };
 
             match clone_node.body {
@@ -91,7 +88,13 @@ impl NodeWalker {
                     }
                 }
                 Elements::Circle(ref mut element) => {
-                    clone_node.body = Elements::Circle(element.x(x).y(y).build());
+                    clone_node.body = Elements::Circle(
+                        element
+                            .x(x)
+                            .y(y)
+                            .radius((result.width as usize / 2) as f32)
+                            .build(),
+                    );
                 }
                 Elements::Image(ref mut element) => {
                     clone_node.body = Elements::Image(
@@ -113,6 +116,15 @@ impl NodeWalker {
 
     pub fn get(&mut self, pointer: &froggy::Pointer<Node>) -> Node {
         self.tree[pointer].clone()
+    }
+
+    pub fn find(&self, id: &str) -> Node {
+        let index = self
+            .tree
+            .iter_all()
+            .find(|x| x.id == id.to_string())
+            .unwrap();
+        self.tree[&self.tree.pin(&index)].clone()
     }
 
     pub fn get_batch(&mut self) -> Batch {
