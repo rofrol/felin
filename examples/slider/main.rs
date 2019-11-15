@@ -6,6 +6,7 @@ mod slider;
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
     slider: Slider,
+    buttons: wgpu::BindGroup,
 }
 
 impl Base for Main {
@@ -31,9 +32,11 @@ impl Base for Main {
             ],
         );
 
-        pipeline.use_textures(buttons);
-
-        Main { pipeline, slider }
+        Main {
+            pipeline,
+            slider,
+            buttons,
+        }
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
@@ -64,6 +67,7 @@ impl Base for Main {
                 &system,
                 &self.slider.batch.indices,
                 &self.slider.batch.vertices,
+                Some(&self.buttons),
             );
         }
 

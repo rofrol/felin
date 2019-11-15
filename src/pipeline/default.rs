@@ -273,8 +273,8 @@ impl Pipeline {
         });
 
         let mut encoder = system
-        .device
-        .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
         for (i, image) in faces.iter().enumerate() {
             let image_buffer = system
@@ -332,36 +332,13 @@ impl Pipeline {
         bind_group
     }
 
-    pub fn use_textures(&mut self, texture_array: wgpu::BindGroup) {
-        self.texture_bind = texture_array;
-    }
-
-    pub fn draw_mesh(&mut self, pass: &mut wgpu::RenderPass, system: &mut System, mesh: &Mesh) {
-        let vertex_buffer = system
-            .device
-            .create_buffer_mapped(mesh.vertices.len(), wgpu::BufferUsage::VERTEX)
-            .fill_from_slice(&mesh.vertices);
-
-        let index_buffer = system
-            .device
-            .create_buffer_mapped(mesh.indices.len(), wgpu::BufferUsage::INDEX)
-            .fill_from_slice(&mesh.indices);
-
-        pass.set_pipeline(&self.render_pipeline);
-        pass.set_bind_group(0, &self.bind_group, &[]);
-
-        pass.set_bind_group(1, &self.texture_bind, &[]);
-        pass.set_index_buffer(&index_buffer, 0);
-        pass.set_vertex_buffers(0, &[(&vertex_buffer, 0)]);
-        pass.draw_indexed(0..mesh.indices.len() as u32, 0, 0..1);
-    }
-
     pub fn draw(
         &mut self,
         pass: &mut wgpu::RenderPass,
         system: &System,
         indices: &Vec<u16>,
         vertices: &Vec<Vertex>,
+        textures: Option<&wgpu::BindGroup>,
     ) {
         let vertex_buffer = system
             .device
@@ -374,9 +351,14 @@ impl Pipeline {
             .fill_from_slice(&indices);
 
         pass.set_pipeline(&self.render_pipeline);
-        pass.set_bind_group(0, &self.bind_group, &[]);
 
-        pass.set_bind_group(1, &self.texture_bind, &[]);
+        pass.set_bind_group(0, &self.bind_group, &[]);
+        if textures.is_some() {
+            pass.set_bind_group(1, textures.as_ref().unwrap(), &[]);
+        } else {
+            pass.set_bind_group(1, &self.texture_bind, &[]);
+        }
+
         pass.set_index_buffer(&index_buffer, 0);
         pass.set_vertex_buffers(0, &[(&vertex_buffer, 0)]);
         pass.draw_indexed(0..indices.len() as u32, 0, 0..1);
