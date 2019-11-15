@@ -13,13 +13,18 @@ pub struct Main {
 
 impl Base for Main {
     fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
+        let window_size = LogicalSize {
+            width: 1500.0,
+            height: 800.0,
+        };
+        
         let window = WindowBuilder::new()
             .with_title("title")
-            .with_inner_size(LogicalSize {
-                width: 1500.0,
-                height: 800.0,
-            })
+            .with_inner_size(window_size)
             .with_resizable(true);
+
+        system.screen_descriptor.width = window_size.width as u32;
+        system.screen_descriptor.height = window_size.height as u32;
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let mut slider = Slider::new(&window);
@@ -84,7 +89,6 @@ impl Base for Main {
                 depth_stencil_attachment: None,
             });
 
-         
             self.pipeline.draw(
                 &mut pass,
                 &system,
@@ -100,7 +104,6 @@ impl Base for Main {
                 &self.slider.gallery.vertices,
                 Some(&self.images),
             );
-
         }
 
         system.queue.submit(&[encoder.finish()]);
