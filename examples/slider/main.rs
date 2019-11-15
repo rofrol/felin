@@ -1,12 +1,26 @@
 use felin::{app, pipeline, Base, Event, System};
+use slider::Slider;
+
+mod slider;
 
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
+    slider: Slider,
 }
 
 impl Base for Main {
     fn init(system: &mut System) -> Self {
         let mut pipeline = pipeline::default::Pipeline::new(system);
+        let slider = Slider::new();
+
+        let buttons = pipeline.create_textures_array(
+            system,
+            vec![
+                "examples/slider/assets/arrow_left.png",
+                "examples/slider/assets/arrow_right.png",
+            ],
+        );
+
         let images = pipeline.create_textures_array(
             system,
             vec![
@@ -17,7 +31,9 @@ impl Base for Main {
             ],
         );
 
-        Main { pipeline }
+        pipeline.use_textures(buttons);
+
+        Main { pipeline, slider }
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
@@ -42,6 +58,13 @@ impl Base for Main {
                 }],
                 depth_stencil_attachment: None,
             });
+
+            self.pipeline.draw(
+                &mut pass,
+                &system,
+                &self.slider.batch.indices,
+                &self.slider.batch.vertices,
+            );
         }
 
         system.queue.submit(&[encoder.finish()]);
