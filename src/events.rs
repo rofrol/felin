@@ -23,7 +23,7 @@ impl Mouse {
         self.pressed_buttons.contains(&Button::Right)
     }
 
-    pub fn on_left_right(&self) -> bool {
+    pub fn on_left_click(&self) -> bool {
         self.pressed_buttons.contains(&Button::Left)
     }
 

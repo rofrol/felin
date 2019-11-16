@@ -9,8 +9,6 @@ use winit::window::WindowBuilder;
 pub struct Slider {
     nodes: NodeWalker,
     slide: i32,
-    width: f32,
-    height: f32,
     pub container: Batch,
     pub gallery: Mesh,
 }
@@ -26,7 +24,7 @@ impl Slider {
                             if node.id.contains("button_left") {
                                 element.use_texture(1);
                                 node.body = Elements::Image(element.build());
-                                if event.mouse.on_left_right() {
+                                if event.mouse.on_left_click() {
                                     if self.slide > 0 {
                                         self.slide -= 1;
                                     }
@@ -34,8 +32,8 @@ impl Slider {
                             } else if node.id.contains("button_right") {
                                 element.use_texture(3);
                                 node.body = Elements::Image(element.build());
-                                if event.mouse.on_left_right() {
-                                    if self.slide <= 3 {
+                                if event.mouse.on_left_click() {
+                                    if self.slide < 2 {
                                         self.slide += 1;
                                     }
                                 }
@@ -63,16 +61,19 @@ impl Slider {
 
         self.container = self.nodes.get_batch();
     }
-    pub fn build(&mut self) {
+    pub fn new(window: &WindowBuilder) -> Self {
+        let mut tree = NodeWalker::create();
+        let window_params = window.window.inner_size.unwrap();
+
         let container_rect = Rectangle::new()
-            .x((self.width as usize / 2) as f32)
+            .x((window_params.width as usize / 2) as f32)
             .y(200.0)
             .color([0.52, 0.73, 0.94, 1.0])
-            .width(self.width)
-            .height(self.height)
+            .width(window_params.width as f32)
+            .height(window_params.height as f32)
             .build();
 
-        let container = self.nodes.add(Node {
+        let container = tree.add(Node {
             grid: Some(Grid::new(
                 container_rect.width,
                 container_rect.height,
@@ -84,7 +85,7 @@ impl Slider {
             id: "container".to_string(),
         });
 
-        self.nodes.add(Node {
+        tree.add(Node {
             grid: None,
             body: Elements::Image(Image::new().use_texture(0).build()),
             parent: Some(container.clone()),
@@ -92,7 +93,7 @@ impl Slider {
             id: "button_left".to_string(),
         });
 
-        self.nodes.add(Node {
+        tree.add(Node {
             grid: None,
             body: Elements::Image(Image::new().use_texture(2).build()),
             parent: Some(container.clone()),
@@ -100,29 +101,19 @@ impl Slider {
             id: "button_right".to_string(),
         });
 
-        let gallery = self.nodes.add(Node {
+        let gallery = tree.add(Node {
             grid: None,
-            body: Elements::Image(Image::new().use_texture(self.slide).build()),
+            body: Elements::Image(Image::new().use_texture(0).build()),
             parent: Some(container.clone()),
             area: Some("1/11/0/12".to_string()),
             id: "slide".to_string(),
         });
 
-        self.container = self.nodes.get_batch();
-        self.gallery = self.nodes.get(&gallery).mesh();
-    }
-
-    pub fn new(window: &WindowBuilder) -> Self {
-        let mut tree = NodeWalker::create();
-        let window_params = window.window.inner_size.unwrap();
-
         Self {
             container: tree.get_batch(),
+            gallery: tree.get(&gallery).mesh(),
             nodes: tree,
-            width: window_params.width as f32,
-            height: window_params.height as f32,
-            gallery: Image::new().use_texture(0).build().mesh(),
-            slide: 1,
+            slide: 0,
         }
     }
 }

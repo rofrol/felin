@@ -17,18 +17,13 @@ impl Base for Main {
             width: 1500.0,
             height: 800.0,
         };
-        
         let window = WindowBuilder::new()
             .with_title("title")
             .with_inner_size(window_size)
             .with_resizable(true);
 
-        system.screen_descriptor.width = window_size.width as u32;
-        system.screen_descriptor.height = window_size.height as u32;
-
         let mut pipeline = pipeline::default::Pipeline::new(system);
-        let mut slider = Slider::new(&window);
-        slider.build();
+        let slider = Slider::new(&window);
 
         let buttons = pipeline.create_textures_array(
             system,
