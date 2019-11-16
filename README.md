@@ -13,6 +13,6 @@ It is meant as a learning projects for myself and perhaps other beginners.
 To check the examples, clone the project and run command
 
 ```
-cargo run --examples slider
+cargo run --example slider
 
 ```
