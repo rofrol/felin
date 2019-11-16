@@ -106,5 +106,5 @@ impl Base for Main {
 }
 
 fn main() {
-    app::<Main>("App")
+    app::<Main>()
 }

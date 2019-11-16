@@ -1,4 +1,4 @@
-use crate::definitions::{Mesh, Vertex};
+use crate::definitions::{Vertex};
 use crate::utils::{load_glsl, ShaderStage};
 use crate::System;
 use cgmath::{self, prelude::*};

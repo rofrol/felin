@@ -27,7 +27,7 @@ pub trait Base: 'static + Sized {
 // Main Application logic
 ///////////////////////////////////////////////////////////////////////////
 
-pub fn app<E: Base>(title: &str) {
+pub fn app<E: Base>() {
     let window_event_loop = EventLoop::new();
 
     let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
