@@ -10,7 +10,7 @@ Felin is a very light and simple graphics library written in rust, it can render
 
 It is meant as a learning projects for myself and perhaps other beginners.
 
-To run examples clone the project and run
+To check the examples, clone the project and run command
 
 ```
 cargo run --examples slider
