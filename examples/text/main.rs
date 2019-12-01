@@ -1,11 +1,10 @@
 use felin::mesh::Text;
-use felin::{app, pipeline, Base, Event, System};
+use felin::{app, pipeline, utils::FontPallet, Base, Event, System};
 
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
-    text: Text,
 }
 
 impl Base for Main {
@@ -19,14 +18,12 @@ impl Base for Main {
             .with_inner_size(window_size)
             .with_resizable(true);
 
-        let font: &[u8] = include_bytes!("./assets/Roboto.ttf");
+        let font: FontPallet =
+            FontPallet::new(12).cache_asciis(include_bytes!("./assets/Roboto.ttf"));
 
-        let mut font = fontdue::Font::from_bytes(font).unwrap();
-    
-    
         let mut pipeline = pipeline::default::Pipeline::new(system);
-        let text = Text::new().text("Hello").build(&mut font);
-        (Main { pipeline, text }, window)
+
+        (Main { pipeline }, window)
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {

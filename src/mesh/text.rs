@@ -1,7 +1,6 @@
 use crate::definitions::{Mesh, Vertex};
 use cgmath::{self, prelude::*};
 
-
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Text {
@@ -22,7 +21,7 @@ impl Text {
             max_width: 100.0,
             vertices: Vec::new(),
             indices: Vec::new(),
-            text: "".to_string()
+            text: "".to_string(),
         }
     }
 
@@ -47,8 +46,14 @@ impl Text {
     }
 
     pub fn build(&self, font: &mut fontdue::Font) -> Self {
+        let text = "text";
 
-        let (metrics, bitmap) = font.rasterize('S', 17.0);
+        let mut bitmap_container:Vec<u8> = Vec::new();
+
+        for chr in text.chars() {
+            let (metrics, bitmap) = font.rasterize(chr, 17.0);
+            bitmap_container.extend(bitmap);
+        }
 
         Self {
             x: 100.0,
@@ -56,7 +61,7 @@ impl Text {
             max_width: 100.0,
             vertices: Vec::new(),
             indices: Vec::new(),
-            text: self.text.clone()
+            text: self.text.clone(),
         }
     }
 

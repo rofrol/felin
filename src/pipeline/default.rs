@@ -222,6 +222,27 @@ impl Pipeline {
         }
     }
 
+    pub fn create_texture(&mut self, system: &mut System) {
+        let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            address_mode_w: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Nearest,
+            min_filter: wgpu::FilterMode::Linear,
+            mipmap_filter: wgpu::FilterMode::Nearest,
+            lod_min_clamp: -100.0,
+            lod_max_clamp: 100.0,
+            compare_function: wgpu::CompareFunction::Always,
+        });
+
+        // let texture_extent = wgpu::Extent3d {
+        //     width: img_width,
+        //     height: img_height,
+        //     depth: 1,
+        // };
+
+    }
+
     pub fn create_textures_array(
         &mut self,
         system: &mut System,
