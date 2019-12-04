@@ -338,6 +338,8 @@ impl Pipeline {
         system: &mut System,
         font_instance: &FontPallet,
     ) -> wgpu::BindGroup {
+
+        let format = wgpu::TextureFormat::Rgba8Unorm;
         let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -362,7 +364,7 @@ impl Pipeline {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8Unorm,
+            format,
             usage: wgpu::TextureUsage::COPY_DST
                 | wgpu::TextureUsage::SAMPLED
                 | wgpu::TextureUsage::WRITE_ALL,
@@ -404,7 +406,7 @@ impl Pipeline {
         }
 
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor {
-            format: wgpu::TextureFormat::Rgba8Unorm,
+            format,
             dimension: wgpu::TextureViewDimension::D2,
             aspect: wgpu::TextureAspect::default(),
             base_mip_level: 0,

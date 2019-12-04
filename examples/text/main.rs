@@ -22,15 +22,16 @@ impl Base for Main {
             .with_resizable(true);
 
         let font_data = include_bytes!("./assets/Roboto.ttf");
-        let font: FontPallet = FontPallet::new(24, font_data).cache_asciis();
+        let font: FontPallet = FontPallet::new(12, font_data).cache_asciis();
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let font_texture = pipeline.create_font_texture(system, &font);
 
         let rec = Image::new()
-            .width(200.0)
-            .x(5.0)
-            .y(5.0)
+            .width(1000.0)
+            .height(1000.0)
+            .x(55.0)
+            .y(55.0)
             .use_texture(0)
             .build();
 
