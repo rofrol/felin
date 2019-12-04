@@ -1,4 +1,7 @@
 use crate::definitions::{Mesh, Vertex};
+use crate::utils::Batch;
+use crate::utils::{FontBitmap, FontPallet};
+
 use cgmath::{self, prelude::*};
 
 #[allow(dead_code)]
@@ -7,7 +10,10 @@ pub struct Text {
     pub x: f32,
     pub y: f32,
     pub text: String,
-    pub max_width: f32,
+    pub width: f32,
+    pub height: f32,
+    texture_index: i32,
+    color: [f32; 4],
     vertices: Vec<Vertex>,
     indices: Vec<u16>,
 }
@@ -18,7 +24,10 @@ impl Text {
         Self {
             x: 100.0,
             y: 100.0,
-            max_width: 100.0,
+            width: 100.0,
+            height: 100.0,
+            color: [1.0, 1.0, 1.0, 1.0],
+            texture_index: 0,
             vertices: Vec::new(),
             indices: Vec::new(),
             text: "".to_string(),
@@ -40,27 +49,57 @@ impl Text {
         self
     }
 
-    pub fn max_width(&mut self, width: f32) -> &mut Self {
-        self.max_width = width;
-        self
+    fn create_letter(&mut self, letter: &FontBitmap) -> Mesh {
+        let vertices = vec![
+            //Left top corner
+            Vertex::new([self.x, self.y], self.color, [0.0, 0.0], self.texture_index),
+            //Right top corner
+            Vertex::new(
+                [self.x + self.width, self.y],
+                self.color,
+                [1.0, 0.0],
+                self.texture_index,
+            ),
+            //Right bottom corner
+            Vertex::new(
+                [self.x + self.width, self.y + self.height],
+                self.color,
+                [1.0, 1.0],
+                self.texture_index,
+            ),
+            //Left bottom
+            Vertex::new(
+                [self.x, self.y + self.height],
+                self.color,
+                [0.0, 1.0],
+                self.texture_index,
+            ),
+        ];
+        let indices = vec![0, 1, 2, 2, 3, 0];
+
+        Mesh {
+            vertices,
+            indices
+        }
     }
 
-    pub fn build(&self, font: &mut fontdue::Font) -> Self {
-        let text = "text";
+    pub fn build(&mut self, font: &FontPallet) -> Self {
+        let text = "t";
+        let batch = Batch::new();
 
-        let mut bitmap_container:Vec<u8> = Vec::new();
-
-        for chr in text.chars() {
-            let (metrics, bitmap) = font.rasterize(chr, 17.0);
-            bitmap_container.extend(bitmap);
+        for key in text.chars() {
+            let character_mesh = self.create_letter(font.get(key));
         }
 
         Self {
-            x: 100.0,
-            y: 100.0,
-            max_width: 100.0,
+            x: self.x,
+            y: self.y,
+            width: self.width,
+            height: self.height,
+            color: self.color,
             vertices: Vec::new(),
             indices: Vec::new(),
+            texture_index: self.texture_index,
             text: self.text.clone(),
         }
     }
