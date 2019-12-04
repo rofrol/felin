@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
 
 #[derive(Clone, Debug)]
@@ -13,6 +12,7 @@ pub struct FontBitmap {
 
 /// truetype font
 pub struct FontPallet {
+    font_data: &'static [u8],
     size: i32,
     max_w: i32,
     max_h: i32,
@@ -22,11 +22,11 @@ pub struct FontPallet {
 
 impl FontPallet {
     /// parse a truetype file from bytes
-    pub fn new(size: i32) -> Self {
-        
+    pub fn new(size: i32, font_data: &'static [u8]) -> Self {
         let (max_w, max_h) = (size * 32, size * 32);
 
         Self {
+            font_data: &font_data,
             size: size,
             bitmaps: HashMap::new(),
             cur_pt: cgmath::Point2::new(0, 0),
@@ -36,9 +36,8 @@ impl FontPallet {
     }
 
     /// manually cache characters
-    pub fn cache(&mut self, s: &str, font: &[u8]) -> Self {
-
-        let mut font = fontdue::Font::from_bytes(font).unwrap();
+    pub fn cache(&mut self, s: &str) -> Self {
+        let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
         for ch in s.chars() {
             if !self.bitmaps.contains_key(&ch) {
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
@@ -75,6 +74,7 @@ impl FontPallet {
 
         FontPallet {
             size: self.size,
+            font_data: self.font_data,
             bitmaps: self.bitmaps.clone(),
             cur_pt: self.cur_pt,
             max_h: self.max_h,
@@ -83,8 +83,8 @@ impl FontPallet {
     }
 
     /// cache all ascii chars
-    pub fn cache_asciis(&mut self, font: &[u8]) -> Self {
-        return self.cache(ASCII_CHARS, font)
+    pub fn cache_asciis(&mut self) -> Self {
+        return self.cache(ASCII_CHARS);
     }
 
     pub fn get(&self, ch: char) -> &FontBitmap {

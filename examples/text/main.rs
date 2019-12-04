@@ -17,9 +17,10 @@ impl Base for Main {
             .with_title("title")
             .with_inner_size(window_size)
             .with_resizable(true);
+        
+        let font_data = include_bytes!("./assets/Roboto.ttf");
 
-        let font: FontPallet =
-            FontPallet::new(12).cache_asciis(include_bytes!("./assets/Roboto.ttf"));
+        let font: FontPallet = FontPallet::new(12, font_data).cache_asciis();
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
 
