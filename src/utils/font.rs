@@ -3,7 +3,7 @@ const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQ
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
-    pub bitmap: Vec<u8>,
+    pub data: Vec<u8>,
     pub x: u32,
     pub y: u32,
     pub width: u32,
@@ -14,8 +14,8 @@ pub struct FontBitmap {
 pub struct FontPallet {
     font_data: &'static [u8],
     size: i32,
-    max_w: i32,
-    max_h: i32,
+    pub max_w: i32,
+    pub max_h: i32,
     cur_pt: cgmath::Point2<i32>,
     pub bitmaps: HashMap<char, FontBitmap>,
 }
@@ -23,7 +23,7 @@ pub struct FontPallet {
 impl FontPallet {
     /// parse a truetype file from bytes
     pub fn new(size: i32, font_data: &'static [u8]) -> Self {
-        let (max_w, max_h) = (size * 32, size * 32);
+        let (max_w, max_h) = (size * 15, size * 15);
 
         Self {
             font_data: &font_data,
@@ -58,7 +58,7 @@ impl FontPallet {
                 self.bitmaps.insert(
                     ch,
                     FontBitmap {
-                        bitmap,
+                        data: bitmap,
                         y: y as u32,
                         x: x as u32,
                         width: w as u32,
