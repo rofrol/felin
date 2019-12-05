@@ -187,7 +187,6 @@ impl Pipeline {
         });
 
         let texture_view = texture.create_default_view();
-        
         let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -338,15 +337,14 @@ impl Pipeline {
         system: &mut System,
         font_instance: &FontPallet,
     ) -> wgpu::BindGroup {
-
-        let format = wgpu::TextureFormat::Rgba8Unorm;
+        let format = wgpu::TextureFormat::Rgba8UnormSrgb;
         let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
+            mag_filter: wgpu::FilterMode::Linear,
             min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Nearest,
+            mipmap_filter: wgpu::FilterMode::Linear,
             lod_min_clamp: -100.0,
             lod_max_clamp: 100.0,
             compare_function: wgpu::CompareFunction::Always,
@@ -398,8 +396,8 @@ impl Pipeline {
                     },
                 },
                 wgpu::Extent3d {
-                    width: value.width,
-                    height: value.height,
+                    width: value.width / 4,
+                    height: value.height / 4,
                     depth: 1,
                 },
             );
