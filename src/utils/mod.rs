@@ -4,7 +4,7 @@ pub mod grid;
 pub mod node;
 
 pub use batch::Batch;
-pub use font::{FontBitmap, FontPallet};
+pub use font::{FontPallet};
 pub use grid::{Grid, GridResult};
 pub use node::{Node, NodeWalker};
 

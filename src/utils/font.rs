@@ -1,13 +1,51 @@
+
 use std::collections::HashMap;
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
     pub data: Vec<u8>,
-    pub x: u32,
-    pub y: u32,
+    pub x: f32,
+    pub y: f32,
     pub width: u32,
     pub height: u32,
+    max_width: f32,
+    max_height: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct UvPosition {
+    pub x: [f32; 2],
+    pub y: [f32; 2],
+}
+
+impl FontBitmap {
+    pub fn get_uv_position(&self) -> UvPosition {
+        println!("{} {}", self.x / self.max_width, self.x / self.max_width);
+
+
+        return UvPosition {
+            x: [
+                0.37,
+                0.39,
+            ],
+            y: [
+                0.08,
+                0.1,
+            ],
+        };
+
+        // return UvPosition {
+        //     x: [
+        //         0.5,
+        //         0.51,
+        //     ],
+        //     y: [
+        //         0.0,
+        //         0.04,
+        //     ],
+        // };
+    }
 }
 
 /// truetype font
@@ -59,10 +97,12 @@ impl FontPallet {
                     ch,
                     FontBitmap {
                         data: bitmap,
-                        y: y as u32,
-                        x: x as u32,
+                        y: y as f32,
+                        x: x as f32,
                         width: w as u32,
                         height: h as u32,
+                        max_width: self.max_w as f32,
+                        max_height: self.max_h as f32,
                     },
                 );
 
