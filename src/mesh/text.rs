@@ -11,6 +11,8 @@ pub struct Text {
     pub text: String,
     pub width: f32,
     pub height: f32,
+    row_height: f32,
+    current_char_position: cgmath::Vector2<f32>,
     texture_index: i32,
     color: [f32; 4],
     vertices: Vec<Vertex>,
@@ -25,6 +27,8 @@ impl Text {
             y: 100.0,
             width: 100.0,
             height: 100.0,
+            current_char_position: cgmath::Vector2::new(0.0, 0.0),
+            row_height: 10.0,
             color: [1.0, 1.0, 1.0, 1.0],
             texture_index: 0,
             vertices: Vec::new(),
@@ -58,33 +62,41 @@ impl Text {
         self
     }
 
-    fn create_letter(&mut self, letter: UvPosition) -> Mesh {
-        println!("{:?}", letter);
+    fn create_letter(&mut self, letter: UvPosition, character: &FontBitmap) -> Mesh {
         let vertices = vec![
             //Left top corner
             Vertex::new(
-                [self.x, self.y],
+                [self.current_char_position.x, self.current_char_position.y],
                 self.color,
                 [letter.x[0], letter.y[0]],
                 self.texture_index,
             ),
             //Right top corner
             Vertex::new(
-                [self.x + self.width, self.y],
+                [
+                    self.current_char_position.x + character.width as f32,
+                    self.current_char_position.y,
+                ],
                 self.color,
                 [letter.x[1], letter.y[0]],
                 self.texture_index,
             ),
             //Right bottom corner
             Vertex::new(
-                [self.x + self.width, self.y + self.height],
+                [
+                    self.current_char_position.x + character.width as f32,
+                    self.current_char_position.y + character.height as f32,
+                ],
                 self.color,
                 [letter.x[1], letter.y[1]],
                 self.texture_index,
             ),
             //Left bottom
             Vertex::new(
-                [self.x, self.y + self.height],
+                [
+                    self.current_char_position.x,
+                    self.y + self.current_char_position.y + character.height as f32,
+                ],
                 self.color,
                 [letter.x[0], letter.y[1]],
                 self.texture_index,
@@ -99,21 +111,34 @@ impl Text {
         let text = "t";
         let mut batch = Batch::new();
 
+        self.current_char_position = cgmath::Vector2::new(self.x, self.y);
+
         for key in text.chars() {
-            let uv_positions = font.get(key).get_uv_position();
-            let letter = self.create_letter(uv_positions);
+            let character = font.get(key);
+            let uv_positions = character.get_uv_position();
+
+            self.current_char_position =
+                self.current_char_position + cgmath::Vector2::new(character.width as f32, 0.0);
+
+            if self.current_char_position.x > self.width {
+                self.current_char_position =
+                    cgmath::Vector2::new(0.0, self.current_char_position.y + self.row_height);
+            }
+
+            let letter = self.create_letter(uv_positions, character);
             batch.add_mesh(&letter);
         }
-        self.vertices = batch.vertices;
-        self.indices = batch.indices;
+
         Self {
             x: self.x,
             y: self.y,
             width: self.width,
             height: self.height,
+            current_char_position: self.current_char_position,
+            row_height: self.row_height,
             color: self.color,
-            vertices: self.vertices.clone(),
-            indices: self.indices.clone(),
+            vertices: batch.vertices,
+            indices: batch.indices,
             texture_index: self.texture_index,
             text: self.text.clone(),
         }

@@ -12,14 +12,9 @@ pub struct Main {
 
 impl Base for Main {
     fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
-        let window_size = LogicalSize {
-            width: 1600.0,
-            height: 1500.0,
-        };
 
         let window = WindowBuilder::new()
             .with_title("title")
-            .with_inner_size(window_size)
             .with_resizable(true);
 
         let font_data = include_bytes!("./assets/Roboto.ttf");
