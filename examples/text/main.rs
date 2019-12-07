@@ -1,4 +1,4 @@
-use felin::mesh::{Image, Rectangle, Text};
+use felin::mesh::{Image, Text};
 use felin::{app, pipeline, utils::FontPallet, Base, Event, System};
 
 use winit::{dpi::LogicalSize, window::WindowBuilder};
@@ -6,22 +6,33 @@ use winit::{dpi::LogicalSize, window::WindowBuilder};
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
     font_texture: wgpu::BindGroup,
+    text_container: Text,
     rec: Image,
-    rec2: Text,
 }
 
 impl Base for Main {
     fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
-
         let window = WindowBuilder::new()
+            .with_min_inner_size(LogicalSize {
+                width: 1500.0,
+                height: 800.0,
+            })
             .with_title("title")
             .with_resizable(true);
 
         let font_data = include_bytes!("./assets/Roboto.ttf");
-        let font: FontPallet = FontPallet::new(120, font_data).cache_asciis();
+        let font: FontPallet = FontPallet::new(140, font_data).cache_asciis();
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let font_texture = pipeline.create_font_texture(system, &font);
+
+        let text_container = Text::new()
+            .width(130.0)
+            .height(200.0)
+            .text("tobe")
+            .x(350.0)
+            .y(350.0)
+            .build(&font);
 
         let rec = Image::new()
             .width(1800.0)
@@ -31,19 +42,12 @@ impl Base for Main {
             .use_texture(0)
             .build();
 
-        let rec2 = Text::new()
-            .width(130.0)
-            .height(200.0)
-            .x(350.0)
-            .y(350.0)
-            .build(&font);
-
         (
             Main {
                 pipeline,
                 font_texture,
+                text_container,
                 rec,
-                rec2,
             },
             window,
         )
@@ -83,8 +87,8 @@ impl Base for Main {
             self.pipeline.draw(
                 &mut pass,
                 system,
-                &self.rec2.mesh().indices,
-                &self.rec2.mesh().vertices,
+                &self.text_container.mesh().indices,
+                &self.text_container.mesh().vertices,
                 Some(&self.font_texture),
             );
         }

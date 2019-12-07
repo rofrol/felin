@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
 
@@ -19,31 +18,40 @@ pub struct UvPosition {
     pub y: [f32; 2],
 }
 
+fn ceil(value: f64, scale: i8) -> f64 {
+    let multiplier = 10f64.powi(scale as i32) as f64;
+    (value * multiplier).ceil() / multiplier
+}
+
 impl FontBitmap {
     pub fn get_uv_position(&self) -> UvPosition {
-        println!("{} {}", self.x / self.max_width, self.x / self.max_width);
+        let x_end_position = ceil((self.x / self.max_width) as f64, 1) as f32;
+        let x_start_position = ceil((self.width as f32 / self.max_width) as f64, 2) as f32;
 
+        let y_end_position = ceil((self.y / self.max_height) as f64, 1) as f32;
+        let y_start_position = ceil((self.height as f32 / self.max_height) as f64, 2) as f32;
+
+        // println!(
+        //     "{:?}",
+        //     [(x_end_position - x_start_position).abs(), x_end_position]
+        // );
+
+        // println!("{} {}", y_start_position, y_end_position);
 
         return UvPosition {
-            x: [
-                0.37,
-                0.39,
-            ],
-            y: [
-                0.08,
-                0.1,
-            ],
+            x: [(x_end_position - x_start_position).abs(), x_end_position],
+            y: [(y_end_position - y_start_position).abs(), y_end_position],
         };
 
         // return UvPosition {
-        //     x: [
-        //         0.5,
-        //         0.51,
-        //     ],
-        //     y: [
-        //         0.0,
-        //         0.04,
-        //     ],
+        // x: [
+        //     0.37,
+        //     0.39,
+        // ],
+        // y: [
+        //     0.08,
+        //     0.1,
+        // ],
         // };
     }
 }
@@ -81,7 +89,6 @@ impl FontPallet {
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
                 let (w, h) = (metrics.width as i32, metrics.height as i32);
                 let (mut x, mut y) = self.cur_pt.into();
-
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
