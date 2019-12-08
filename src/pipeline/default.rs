@@ -338,6 +338,7 @@ impl Pipeline {
         font_instance: &FontPallet,
     ) -> wgpu::BindGroup {
         let format = wgpu::TextureFormat::Rgba8UnormSrgb;
+
         let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -345,8 +346,8 @@ impl Pipeline {
             mag_filter: wgpu::FilterMode::Linear,
             min_filter: wgpu::FilterMode::Linear,
             mipmap_filter: wgpu::FilterMode::Linear,
-            lod_min_clamp: -100.0,
-            lod_max_clamp: 100.0,
+            lod_min_clamp: 0.0,
+            lod_max_clamp: 0.0,
             compare_function: wgpu::CompareFunction::Always,
         });
 
@@ -372,7 +373,7 @@ impl Pipeline {
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
-        for (_key, value) in font_instance.bitmaps.iter() {
+        for (_key, value) in font_instance.characters.iter() {
             let image_buffer = system
                 .device
                 .create_buffer_mapped(value.data.len(), wgpu::BufferUsage::COPY_SRC)
@@ -382,8 +383,8 @@ impl Pipeline {
                 wgpu::BufferCopyView {
                     buffer: &image_buffer,
                     offset: 0,
-                    row_pitch: 4 * value.width,
-                    image_height: value.height,
+                    row_pitch: 4 * value.width as u32,
+                    image_height:  value.height as u32,
                 },
                 wgpu::TextureCopyView {
                     texture: &texture,
@@ -396,8 +397,8 @@ impl Pipeline {
                     },
                 },
                 wgpu::Extent3d {
-                    width: value.width / 4,
-                    height: value.height / 4,
+                    width: value.width,
+                    height: value.height,
                     depth: 1,
                 },
             );
@@ -406,7 +407,7 @@ impl Pipeline {
         let texture_view = texture.create_view(&wgpu::TextureViewDescriptor {
             format,
             dimension: wgpu::TextureViewDimension::D2,
-            aspect: wgpu::TextureAspect::default(),
+            aspect: wgpu::TextureAspect::All,
             base_mip_level: 0,
             level_count: 0,
             base_array_layer: 0,

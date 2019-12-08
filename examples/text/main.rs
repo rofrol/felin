@@ -13,30 +13,26 @@ pub struct Main {
 impl Base for Main {
     fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
         let window = WindowBuilder::new()
-            .with_min_inner_size(LogicalSize {
-                width: 1500.0,
-                height: 800.0,
-            })
             .with_title("title")
             .with_resizable(true);
 
         let font_data = include_bytes!("./assets/Roboto.ttf");
-        let font: FontPallet = FontPallet::new(140, font_data).cache_asciis();
+        let font: FontPallet = FontPallet::new(112, font_data).cache_asciis();
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let font_texture = pipeline.create_font_texture(system, &font);
 
         let text_container = Text::new()
-            .width(130.0)
-            .height(200.0)
-            .text("tobe")
+            .width(530.0)
+            .height(500.0)
+            .text("RuneScape")
             .x(350.0)
             .y(350.0)
             .build(&font);
 
         let rec = Image::new()
-            .width(1800.0)
-            .height(1000.0)
+            .width(font.max_w as f32)
+            .height(font.max_h as f32)
             .x(55.0)
             .y(55.0)
             .use_texture(0)
@@ -71,7 +67,12 @@ impl Base for Main {
                     resolve_target: None,
                     load_op: wgpu::LoadOp::Clear,
                     store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color::BLACK,
+                    clear_color: wgpu::Color {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.0,
+                    },
                 }],
                 depth_stencil_attachment: None,
             });

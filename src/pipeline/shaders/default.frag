@@ -10,8 +10,10 @@ layout(set = 1, binding = 1) uniform sampler s_color;
 layout(location = 0) out vec4 o_target;
 
 void main() {
+
     if (layer_index >= 0) {
         o_target = texture(sampler2DArray(in_texture, s_color), vec3(uv_cords, layer_index));
+        // for text o_target =  in_color * vec4(1.0, 1.0, 1.0, texture(sampler2DArray(in_texture, s_color), vec3(uv_cords, layer_index)));
     } else {
         o_target = in_color;
     }

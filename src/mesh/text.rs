@@ -146,7 +146,7 @@ impl Text {
 
         self.last_char_position = self.last_char_position
             + cgmath::Vector2 {
-                x: (character.width as f32 ) as f32,
+                x: (character.width as f32) as f32 + 5.0,
                 y: 0.0,
             };
 

@@ -63,18 +63,18 @@ pub struct FontPallet {
     pub max_w: i32,
     pub max_h: i32,
     cur_pt: cgmath::Point2<i32>,
-    pub bitmaps: HashMap<char, FontBitmap>,
+    pub characters: HashMap<char, FontBitmap>,
 }
 
 impl FontPallet {
     /// parse a truetype file from bytes
     pub fn new(size: i32, font_data: &'static [u8]) -> Self {
-        let (max_w, max_h) = (size * 15, size * 15);
+        let (max_w, max_h) = (size * 32, size * 32);
 
         Self {
             font_data: &font_data,
             size: size,
-            bitmaps: HashMap::new(),
+            characters: HashMap::new(),
             cur_pt: cgmath::Point2::new(0, 0),
             max_h,
             max_w,
@@ -85,7 +85,7 @@ impl FontPallet {
     pub fn cache(&mut self, s: &str) -> Self {
         let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
         for ch in s.chars() {
-            if !self.bitmaps.contains_key(&ch) {
+            if !self.characters.contains_key(&ch) {
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
                 let (w, h) = (metrics.width as i32, metrics.height as i32);
                 let (mut x, mut y) = self.cur_pt.into();
@@ -100,7 +100,7 @@ impl FontPallet {
                 }
 
                 //Add new character to bitmap
-                self.bitmaps.insert(
+                self.characters.insert(
                     ch,
                     FontBitmap {
                         data: bitmap,
@@ -122,7 +122,7 @@ impl FontPallet {
         FontPallet {
             size: self.size,
             font_data: self.font_data,
-            bitmaps: self.bitmaps.clone(),
+            characters: self.characters.clone(),
             cur_pt: self.cur_pt,
             max_h: self.max_h,
             max_w: self.max_w,
@@ -135,6 +135,6 @@ impl FontPallet {
     }
 
     pub fn get(&self, ch: char) -> &FontBitmap {
-        return self.bitmaps.get(&ch).unwrap();
+        return self.characters.get(&ch).unwrap();
     }
 }
