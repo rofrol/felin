@@ -1,4 +1,4 @@
-use crate::mesh::{Circle, Image, Rectangle};
+use crate::mesh::{Circle, Image, Rectangle, Text};
 
 ///////////////////////////////////////////////////////////////////////////
 // Vertex
@@ -57,4 +57,5 @@ pub enum Elements {
     Circle(Circle),
     Image(Image),
     Rectangle(Rectangle),
+    Text(Text),
 }
