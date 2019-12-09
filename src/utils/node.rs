@@ -23,6 +23,7 @@ impl Node {
             Elements::Rectangle(ref mut element) => element.mesh(),
             Elements::Circle(ref mut element) => element.mesh(),
             Elements::Image(ref mut element) => element.mesh(),
+            Elements::Text(ref mut element) => element.mesh(),
         };
     }
 }
@@ -61,6 +62,7 @@ impl NodeWalker {
                     (element.x as usize + result.x as usize) as f32
                 }
                 Elements::Image(ref mut element) => (element.x as usize + result.x as usize) as f32,
+                _ => 0.0,
             };
 
             let y = match parent.body {
@@ -71,6 +73,7 @@ impl NodeWalker {
                     (element.y as usize + result.y as usize) as f32
                 }
                 Elements::Image(ref mut element) => (element.y as usize + result.y as usize) as f32,
+                _ => 0.0,
             };
 
             match clone_node.body {
@@ -106,6 +109,7 @@ impl NodeWalker {
                             .build(),
                     );
                 }
+                _ => (),
             };
 
             return self.tree.create(clone_node);
@@ -135,6 +139,7 @@ impl NodeWalker {
                 Elements::Rectangle(ref mut element) => batch.add_mesh(&element.mesh()),
                 Elements::Circle(ref mut element) => batch.add_mesh(&element.mesh()),
                 Elements::Image(ref mut element) => batch.add_mesh(&element.mesh()),
+                Elements::Text(ref mut element) => batch.add_mesh(&element.mesh()),
             }
         }
 
