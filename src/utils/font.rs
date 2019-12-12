@@ -12,6 +12,14 @@ pub struct FontBitmap {
     max_height: f32,
 }
 
+pub struct Vertex {
+    left_top: [f32; 3],
+    right_bottom: [f32; 2],
+    tex_left_top: [f32; 2],
+    tex_right_bottom: [f32; 2],
+    color: [f32; 4],
+}
+
 #[derive(Debug, Clone)]
 pub struct UvPosition {
     pub x: [f32; 2],

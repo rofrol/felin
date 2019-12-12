@@ -1,5 +1,5 @@
 use crate::definitions::Vertex;
-use crate::utils::{load_glsl, ShaderStage};
+use crate::utils::{load_glsl, FontPallet, ShaderStage};
 use crate::System;
 use cgmath::{self, prelude::*};
 
@@ -9,7 +9,6 @@ pub struct Pipeline {
     bind_group: wgpu::BindGroup,
     texture_layout: wgpu::BindGroupLayout,
     render_pipeline: wgpu::RenderPipeline,
-    texture_bind: wgpu::BindGroup,
 }
 
 #[allow(dead_code)]
@@ -97,8 +96,8 @@ impl Pipeline {
             ],
         });
 
-        let vs_bytes = load_glsl(include_str!("shaders/default.vert"), ShaderStage::Vertex);
-        let fs_bytes = load_glsl(include_str!("shaders/default.frag"), ShaderStage::Fragment);
+        let vs_bytes = load_glsl(include_str!("shaders/text.vert"), ShaderStage::Vertex);
+        let fs_bytes = load_glsl(include_str!("shaders/text.frag"), ShaderStage::Fragment);
         let vs_module = system.device.create_shader_module(&vs_bytes);
         let fs_module = system.device.create_shader_module(&fs_bytes);
 
@@ -170,9 +169,34 @@ impl Pipeline {
                     alpha_to_coverage_enabled: false,
                 });
 
+        Self {
+            uniform_buffer,
+            bind_group,
+            texture_layout,
+            render_pipeline,
+        }
+    }
+
+    pub fn create_font_texture(
+        &mut self,
+        system: &mut System,
+        font_instance: &FontPallet,
+    ) -> wgpu::BindGroup {
+        let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            address_mode_w: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            mipmap_filter: wgpu::FilterMode::Linear,
+            lod_min_clamp: 0.0,
+            lod_max_clamp: 0.0,
+            compare_function: wgpu::CompareFunction::Always,
+        });
+
         let texture_extent = wgpu::Extent3d {
-            width: 256u32,
-            height: 256u32,
+            width: font_instance.max_w as u32,
+            height: font_instance.max_h as u32,
             depth: 1,
         };
 
@@ -182,136 +206,46 @@ impl Pipeline {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8UnormSrgb,
-            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
-        });
-
-        let texture_view = texture.create_default_view();
-        let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            lod_min_clamp: -100.0,
-            lod_max_clamp: 100.0,
-            compare_function: wgpu::CompareFunction::Always,
-        });
-
-        let texture_bind_group = system.device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: &texture_layout,
-            bindings: &[
-                wgpu::Binding {
-                    binding: 0,
-                    resource: wgpu::BindingResource::TextureView(&texture_view),
-                },
-                wgpu::Binding {
-                    binding: 1,
-                    resource: wgpu::BindingResource::Sampler(&sampler),
-                },
-            ],
-        });
-
-        Self {
-            uniform_buffer,
-            bind_group,
-            texture_layout,
-            render_pipeline,
-            texture_bind: texture_bind_group,
-        }
-    }
-
-    pub fn create_textures_array(
-        &mut self,
-        system: &mut System,
-        paths: Vec<&str>,
-    ) -> wgpu::BindGroup {
-        let absolute_path = std::env::current_dir().expect("Bad image path");
-
-        let (mut img_width, mut img_height) = (0, 0);
-
-        let faces = paths
-            .iter()
-            .map(|src| {
-                let img = image::open(absolute_path.join(src)).unwrap().to_rgba();
-                let (width, height) = img.dimensions();
-                img_width = width;
-                img_height = height;
-                img.into_raw()
-            })
-            .collect::<Vec<_>>();
-
-        let texture_extent = wgpu::Extent3d {
-            width: img_width,
-            height: img_height,
-            depth: 1,
-        };
-
-        let texture = system.device.create_texture(&wgpu::TextureDescriptor {
-            size: texture_extent,
-            array_layer_count: faces.len() as u32,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Rgba8Unorm,
-            usage: wgpu::TextureUsage::COPY_DST
-                | wgpu::TextureUsage::SAMPLED
-                | wgpu::TextureUsage::WRITE_ALL,
-        });
-
-        let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
-            address_mode_u: wgpu::AddressMode::ClampToEdge,
-            address_mode_v: wgpu::AddressMode::ClampToEdge,
-            address_mode_w: wgpu::AddressMode::ClampToEdge,
-            mag_filter: wgpu::FilterMode::Nearest,
-            min_filter: wgpu::FilterMode::Linear,
-            mipmap_filter: wgpu::FilterMode::Nearest,
-            lod_min_clamp: -100.0,
-            lod_max_clamp: 100.0,
-            compare_function: wgpu::CompareFunction::Always,
+            format: wgpu::TextureFormat::R8Unorm,
+            usage: wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED,
         });
 
         let mut encoder = system
             .device
             .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
-        for (i, image) in faces.iter().enumerate() {
+        for (_key, value) in font_instance.characters.iter() {
             let image_buffer = system
                 .device
-                .create_buffer_mapped(image.len(), wgpu::BufferUsage::COPY_SRC)
-                .fill_from_slice(&image);
+                .create_buffer_mapped(value.data.len(), wgpu::BufferUsage::COPY_SRC)
+                .fill_from_slice(&value.data);
 
             encoder.copy_buffer_to_texture(
                 wgpu::BufferCopyView {
                     buffer: &image_buffer,
                     offset: 0,
-                    row_pitch: 4 * img_width,
-                    image_height: img_height,
+                    row_pitch: value.width as u32,
+                    image_height: value.height as u32,
                 },
                 wgpu::TextureCopyView {
                     texture: &texture,
                     mip_level: 0,
-                    array_layer: i as u32,
+                    array_layer: 0,
                     origin: wgpu::Origin3d {
-                        x: 0.0,
-                        y: 0.0,
+                        x: value.x as f32,
+                        y: value.y as f32,
                         z: 0.0,
                     },
                 },
-                texture_extent,
+                wgpu::Extent3d {
+                    width: value.width,
+                    height: value.height,
+                    depth: 1,
+                },
             );
         }
 
-        let texture_view = texture.create_view(&wgpu::TextureViewDescriptor {
-            format: wgpu::TextureFormat::Rgba8Unorm,
-            dimension: wgpu::TextureViewDimension::D2Array,
-            aspect: wgpu::TextureAspect::default(),
-            base_mip_level: 0,
-            level_count: 1,
-            base_array_layer: 0,
-            array_layer_count: faces.len() as u32,
-        });
+        let texture_view = texture.create_default_view();
 
         let bind_group = system.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.texture_layout,
@@ -338,7 +272,7 @@ impl Pipeline {
         system: &System,
         indices: &Vec<u16>,
         vertices: &Vec<Vertex>,
-        textures: Option<&wgpu::BindGroup>,
+        textures: &wgpu::BindGroup,
     ) {
         let vertex_buffer = system
             .device
@@ -353,11 +287,7 @@ impl Pipeline {
         pass.set_pipeline(&self.render_pipeline);
 
         pass.set_bind_group(0, &self.bind_group, &[]);
-        if textures.is_some() {
-            pass.set_bind_group(1, textures.as_ref().unwrap(), &[]);
-        } else {
-            pass.set_bind_group(1, &self.texture_bind, &[]);
-        }
+        pass.set_bind_group(1, textures, &[]);
 
         pass.set_index_buffer(&index_buffer, 0);
         pass.set_vertex_buffers(0, &[(&vertex_buffer, 0)]);
