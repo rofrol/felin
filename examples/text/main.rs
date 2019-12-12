@@ -5,22 +5,26 @@ use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
+    text_pipeline: pipeline::text::Pipeline,
     font_texture: wgpu::BindGroup,
     text_container: Text,
     rec: Image,
 }
 
 impl Base for Main {
-    fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
-        let window = WindowBuilder::new()
-            .with_title("title")
-            .with_resizable(true);
+    fn init(system: &mut System) -> Self {
 
+        system.window = WindowBuilder::new()
+        .with_title("pask")
+        .with_resizable(true);
 
-        let font: FontPallet = FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+        let font: FontPallet =
+            FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
-        let mut pipeline = pipeline::default::Pipeline::new(system);
-        let font_texture = pipeline.create_font_texture(system, &font);
+        let pipeline = pipeline::default::Pipeline::new(system);
+        let mut text_pipeline = pipeline::text::Pipeline::new(system);
+
+        let font_texture = text_pipeline.create_font_texture(system, &font);
 
         let text_container = Text::new()
             .width(530.0)
@@ -38,15 +42,13 @@ impl Base for Main {
             .use_texture(0)
             .build();
 
-        (
-            Main {
-                pipeline,
-                font_texture,
-                text_container,
-                rec,
-            },
-            window,
-        )
+        Main {
+            pipeline,
+            text_pipeline,
+            font_texture,
+            text_container,
+            rec,
+        }
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
@@ -77,21 +79,21 @@ impl Base for Main {
                 depth_stencil_attachment: None,
             });
 
-            self.pipeline.draw(
-                &mut pass,
-                system,
-                &self.rec.mesh().indices,
-                &self.rec.mesh().vertices,
-                Some(&self.font_texture),
-            );
+            // self.pipeline.draw(
+            //     &mut pass,
+            //     system,
+            //     &self.rec.mesh().indices,
+            //     &self.rec.mesh().vertices,
+            //     Some(&self.font_texture),
+            // );
 
-            self.pipeline.draw(
-                &mut pass,
-                system,
-                &self.text_container.mesh().indices,
-                &self.text_container.mesh().vertices,
-                Some(&self.font_texture),
-            );
+            // self.pipeline.draw(
+            //     &mut pass,
+            //     system,
+            //     &self.text_container.mesh().indices,
+            //     &self.text_container.mesh().vertices,
+            //     Some(&self.font_texture),
+            // );
         }
         system.queue.submit(&[encoder.finish()]);
     }

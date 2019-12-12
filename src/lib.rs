@@ -19,7 +19,7 @@ use winit::{
 // Base trait for application
 ///////////////////////////////////////////////////////////////////////////
 pub trait Base: 'static + Sized {
-    fn init(system: &mut System) -> (Self, WindowBuilder);
+    fn init(system: &mut System) -> Self;
     fn update(&mut self, system: &mut System, events: &Event);
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System);
 }
@@ -55,12 +55,15 @@ pub fn app<E: Base>() {
     let mut system = System {
         device,
         screen_descriptor: sc_desc,
-        queue
+        queue,
+        window: WindowBuilder::new()
+        .with_title("title")
+        .with_resizable(true),
     };
 
-    let (mut example, window_builder) = E::init(&mut system);
+    let mut example = E::init(&mut system);
 
-    let window = window_builder
+    let window = system.window.clone()
         .build(&window_event_loop)
         .unwrap();
 
