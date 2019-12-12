@@ -22,7 +22,7 @@ impl Image {
             y: 100.0,
             width: 100.0,
             height: 100.0,
-            color: [1.0, 1.0, 1.0, 1.0],
+            color: [0.0, 0.0, 0.0, 0.0],
             collider: Aabb2 {
                 min: cgmath::Point2::new(0.0, 0.0),
                 max: cgmath::Point2::new(0.0, 0.0),

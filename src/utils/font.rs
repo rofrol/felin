@@ -38,21 +38,21 @@ impl FontBitmap {
 
         // println!("{} {}", y_start_position, y_end_position);
 
-        return UvPosition {
-            x: [(x_end_position - x_start_position).abs(), x_end_position],
-            y: [(y_end_position - y_start_position).abs(), y_end_position],
-        };
-
         // return UvPosition {
-        // x: [
-        //     0.37,
-        //     0.39,
-        // ],
-        // y: [
-        //     0.08,
-        //     0.1,
-        // ],
+        //     x: [(x_end_position - x_start_position).abs(), x_end_position],
+        //     y: [(y_end_position - y_start_position).abs(), y_end_position],
         // };
+
+        return UvPosition {
+            x: [
+                0.1,
+                0.2,
+            ],
+            y: [
+                0.02,
+                0.15,
+            ],
+        };
     }
 }
 
@@ -86,13 +86,15 @@ impl FontPallet {
         let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
         for ch in s.chars() {
             if !self.characters.contains_key(&ch) {
+                
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
                 let (w, h) = (metrics.width as i32, metrics.height as i32);
                 let (mut x, mut y) = self.cur_pt.into();
+
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
-                    y += h;
+                    y += (h + self.size);
                 }
 
                 if y >= self.max_h {
@@ -113,7 +115,7 @@ impl FontPallet {
                     },
                 );
 
-                x += w;
+                x += (w + self.size);
 
                 self.cur_pt = cgmath::Point2::new(x, y);
             }

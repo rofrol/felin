@@ -337,8 +337,7 @@ impl Pipeline {
         system: &mut System,
         font_instance: &FontPallet,
     ) -> wgpu::BindGroup {
-        let format = wgpu::TextureFormat::Rgba8UnormSrgb;
-
+      
         let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
@@ -363,10 +362,8 @@ impl Pipeline {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format,
-            usage: wgpu::TextureUsage::COPY_DST
-                | wgpu::TextureUsage::SAMPLED
-                | wgpu::TextureUsage::WRITE_ALL,
+            format: wgpu::TextureFormat::R8Unorm,
+            usage: wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED,
         });
 
         let mut encoder = system
@@ -383,7 +380,7 @@ impl Pipeline {
                 wgpu::BufferCopyView {
                     buffer: &image_buffer,
                     offset: 0,
-                    row_pitch: 4 * value.width as u32,
+                    row_pitch:  value.width as u32,
                     image_height:  value.height as u32,
                 },
                 wgpu::TextureCopyView {
@@ -404,15 +401,7 @@ impl Pipeline {
             );
         }
 
-        let texture_view = texture.create_view(&wgpu::TextureViewDescriptor {
-            format,
-            dimension: wgpu::TextureViewDimension::D2,
-            aspect: wgpu::TextureAspect::All,
-            base_mip_level: 0,
-            level_count: 0,
-            base_array_layer: 0,
-            array_layer_count: 0,
-        });
+        let texture_view = texture.create_default_view();
 
         let bind_group = system.device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.texture_layout,
