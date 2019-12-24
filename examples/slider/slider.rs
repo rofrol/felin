@@ -3,8 +3,6 @@ use felin::mesh::{Image, Rectangle};
 use felin::utils::{Batch, Grid, Node, NodeWalker};
 use felin::Event;
 
-use winit::window::WindowBuilder;
-
 #[allow(dead_code)]
 pub struct Slider {
     nodes: NodeWalker,
@@ -61,16 +59,15 @@ impl Slider {
 
         self.container = self.nodes.get_batch();
     }
-    pub fn new(window: &WindowBuilder) -> Self {
+    pub fn new() -> Self {
         let mut tree = NodeWalker::create();
-        let window_params = window.window.inner_size.unwrap();
 
         let container_rect = Rectangle::new()
-            .x((window_params.width as usize / 2) as f32)
+            .x((800 / 2) as f32)
             .y(200.0)
             .color([0.52, 0.73, 0.94, 1.0])
-            .width(window_params.width as f32)
-            .height(window_params.height as f32)
+            .width(800 as f32)
+            .height(800 as f32)
             .build();
 
         let container = tree.add(Node {

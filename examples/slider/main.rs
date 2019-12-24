@@ -12,18 +12,18 @@ pub struct Main {
 }
 
 impl Base for Main {
-    fn init(system: &mut System) -> (Self, winit::window::WindowBuilder) {
+    fn init(system: &mut System) -> Self {
         let window_size = LogicalSize {
             width: 1500.0,
             height: 800.0,
         };
-        let window = WindowBuilder::new()
+        system.window = WindowBuilder::new()
             .with_title("title")
             .with_inner_size(window_size)
             .with_resizable(true);
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
-        let slider = Slider::new(&window);
+        let slider = Slider::new();
 
         let buttons = pipeline.create_textures_array(
             system,
@@ -44,15 +44,12 @@ impl Base for Main {
             ],
         );
 
-        (
-            Main {
-                pipeline,
-                slider,
-                buttons,
-                images,
-            },
-            window,
-        )
+        Main {
+            pipeline,
+            slider,
+            buttons,
+            images,
+        }
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
