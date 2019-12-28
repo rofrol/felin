@@ -13,10 +13,15 @@ pub struct Main {
 
 impl Base for Main {
     fn init(system: &mut System) -> Self {
-
-        system.window = WindowBuilder::new()
-        .with_title("pask")
-        .with_resizable(true);
+        system.set_window(
+            WindowBuilder::new()
+                .with_title("title")
+                .with_inner_size(LogicalSize {
+                    width: 1500.0,
+                    height: 800.0,
+                })
+                .with_resizable(true),
+        );
 
         let font: FontPallet =
             FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
@@ -87,13 +92,13 @@ impl Base for Main {
             //     Some(&self.font_texture),
             // );
 
-            // self.pipeline.draw(
-            //     &mut pass,
-            //     system,
-            //     &self.text_container.mesh().indices,
-            //     &self.text_container.mesh().vertices,
-            //     Some(&self.font_texture),
-            // );
+            self.text_pipeline.draw(
+                &mut pass,
+                system,
+                &self.text_container.mesh().indices,
+                &self.text_container.mesh().vertices,
+                &self.font_texture,
+            );
         }
         system.queue.submit(&[encoder.finish()]);
     }

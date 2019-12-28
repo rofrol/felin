@@ -1,7 +1,7 @@
 use crate::definitions::{Mesh, Vertex};
 use collision::{prelude::*, primitive, Aabb2};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Image {
     pub x: f32,
     pub y: f32,

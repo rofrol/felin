@@ -32,7 +32,7 @@ pub fn app<E: Base>() {
     let window_event_loop = EventLoop::new();
 
     let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::LowPower,
+        power_preference: wgpu::PowerPreference::HighPerformance,
         backends: wgpu::BackendBit::PRIMARY,
     })
     .unwrap();

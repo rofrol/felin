@@ -10,7 +10,7 @@ use cgmath::{self, prelude::*};
 use collision::{prelude::*, primitive, Aabb2};
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Circle {
     pub x: f32,
     pub y: f32,

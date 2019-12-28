@@ -10,7 +10,7 @@ edition = "2018"
 cgmath = "*"
 glsl-to-spirv = "0.1"
 image = "*"
-winit = "0.20.0-alpha3"
+winit = "0.20.0-alpha4"
 rand = "0.7.0"
 froggy = "*"
 lyon = "*"
@@ -18,5 +18,5 @@ collision = "*"
 uuid = { version = "0.7", features = ["serde", "v4"] }
 wgpu = "0.4.0"
 fontdue = "*"
-
+zerocopy = "0.2"
 

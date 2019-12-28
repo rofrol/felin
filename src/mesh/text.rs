@@ -4,7 +4,7 @@ use crate::utils::Batch;
 use cgmath::{self, prelude::*};
 
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Text {
     pub x: f32,
     pub y: f32,

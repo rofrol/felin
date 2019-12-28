@@ -8,7 +8,7 @@ use lyon::tessellation::FillOptions;
 
 use collision::{prelude::*, primitive, Aabb2};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Rectangle {
     pub x: f32,
     pub y: f32,
