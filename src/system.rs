@@ -1,4 +1,5 @@
 use crate::utils::OPENGL_TO_WGPU_MATRIX;
+use winit::window::WindowBuilder;
 
 pub struct System {
     pub device: wgpu::Device,
@@ -8,6 +9,13 @@ pub struct System {
 }
 
 impl System {
+    pub fn set_window(&mut self, builder: WindowBuilder) {
+        let size = builder.window.inner_size.unwrap();
+        self.window = builder;
+        self.screen_descriptor.width = size.width as u32;
+        self.screen_descriptor.height = size.height as u32;
+    }
+
     pub fn get_screen_matrix(&self) -> cgmath::Matrix4<f32> {
         let matrix: cgmath::Matrix4<f32> = cgmath::Ortho::<f32> {
             left: 0.0,

@@ -13,14 +13,15 @@ pub struct Main {
 
 impl Base for Main {
     fn init(system: &mut System) -> Self {
-        let window_size = LogicalSize {
-            width: 1500.0,
-            height: 800.0,
-        };
-        system.window = WindowBuilder::new()
-            .with_title("title")
-            .with_inner_size(window_size)
-            .with_resizable(true);
+        system.set_window(
+            WindowBuilder::new()
+                .with_title("title")
+                .with_inner_size(LogicalSize {
+                    width: 1500.0,
+                    height: 800.0,
+                })
+                .with_resizable(true),
+        );
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let slider = Slider::new();
