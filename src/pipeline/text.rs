@@ -64,7 +64,7 @@ impl Pipeline {
         let transform_buf: &[f32; 16] = default_transform.as_ref();
 
         let matrix = system.get_screen_matrix();
-
+    
         let ortho_buffer: &[f32; 16] = matrix.as_ref();
 
         let uniform_buffer = system

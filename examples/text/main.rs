@@ -7,6 +7,7 @@ pub struct Main {
     pipeline: pipeline::default::Pipeline,
     text_pipeline: pipeline::text::Pipeline,
     font_texture: wgpu::BindGroup,
+    font_texture2: wgpu::BindGroup,
     text_container: Text,
     rec: Image,
 }
@@ -24,17 +25,18 @@ impl Base for Main {
         );
 
         let font: FontPallet =
-            FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+            FontPallet::new(48, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
-        let pipeline = pipeline::default::Pipeline::new(system);
+        let mut pipeline = pipeline::default::Pipeline::new(system);
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
 
         let font_texture = text_pipeline.create_font_texture(system, &font);
+        let font_texture2 = pipeline.create_font_texture(system, &font);
 
         let text_container = Text::new()
             .width(530.0)
             .height(500.0)
-            .text("R")
+            .text("Runescape")
             .x(350.0)
             .y(350.0)
             .build(&font);
@@ -51,6 +53,7 @@ impl Base for Main {
             pipeline,
             text_pipeline,
             font_texture,
+            font_texture2,
             text_container,
             rec,
         }
@@ -84,13 +87,13 @@ impl Base for Main {
                 depth_stencil_attachment: None,
             });
 
-            // self.pipeline.draw(
-            //     &mut pass,
-            //     system,
-            //     &self.rec.mesh().indices,
-            //     &self.rec.mesh().vertices,
-            //     Some(&self.font_texture),
-            // );
+            self.pipeline.draw(
+                &mut pass,
+                system,
+                &self.rec.mesh().indices,
+                &self.rec.mesh().vertices,
+                Some(&self.font_texture2),
+            );
 
             self.text_pipeline.draw(
                 &mut pass,

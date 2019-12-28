@@ -12,13 +12,7 @@ pub struct FontBitmap {
     max_height: f32,
 }
 
-pub struct Vertex {
-    left_top: [f32; 3],
-    right_bottom: [f32; 2],
-    tex_left_top: [f32; 2],
-    tex_right_bottom: [f32; 2],
-    color: [f32; 4],
-}
+const PADDING: i32 = 15;
 
 #[derive(Debug, Clone)]
 pub struct UvPosition {
@@ -33,27 +27,21 @@ fn ceil(value: f64, scale: i8) -> f64 {
 
 impl FontBitmap {
     pub fn get_uv_position(&self) -> UvPosition {
-        let x_end_position = ceil((self.x / self.max_width) as f64, 1) as f32;
-        let x_start_position = ceil((self.width as f32 / self.max_width) as f64, 2) as f32;
+        let x_start_position = ceil(((self.x - PADDING as f32) / self.max_width) as f64, 2) as f32;
+        let x_end_position = ceil(
+            ((self.x as u32 + self.width) as f32 / self.max_width) as f64,
+            2,
+        ) as f32;
 
-        let y_end_position = ceil((self.y / self.max_height) as f64, 1) as f32;
-        let y_start_position = ceil((self.height as f32 / self.max_height) as f64, 2) as f32;
-
-        // println!(
-        //     "{:?}",
-        //     [(x_end_position - x_start_position).abs(), x_end_position]
-        // );
-
-        // println!("{} {}", y_start_position, y_end_position);
-
-        // return UvPosition {
-        //     x: [(x_end_position - x_start_position).abs(), x_end_position],
-        //     y: [(y_end_position - y_start_position).abs(), y_end_position],
-        // };
+        let y_start_position = ceil(((self.y - PADDING as f32) / self.max_height) as f64, 2) as f32;
+        let y_end_position = ceil(
+            ((self.y as u32 + self.height) as f32 / self.max_height) as f64,
+            2,
+        ) as f32;
 
         return UvPosition {
-            x: [0.0, 1.0],
-            y: [0.0, 1.0],
+            x: [x_start_position, x_end_position],
+            y: [y_start_position, y_end_position],
         };
     }
 }
@@ -95,7 +83,7 @@ impl FontPallet {
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
-                    y += h + self.size;
+                    y += h + PADDING;
                 }
 
                 if y >= self.max_h {
@@ -116,8 +104,7 @@ impl FontPallet {
                     },
                 );
 
-                x += w + self.size;
-
+                x += w + PADDING;
                 self.cur_pt = cgmath::Point2::new(x, y);
             }
         }

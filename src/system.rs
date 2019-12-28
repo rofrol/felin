@@ -22,7 +22,7 @@ impl System {
             right: self.screen_descriptor.width as f32,
             bottom: self.screen_descriptor.height as f32,
             top: 0.0,
-            near: -1.0,
+            near: 0.0,
             far: 1.0,
         }
         .into();

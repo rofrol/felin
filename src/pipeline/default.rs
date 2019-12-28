@@ -1,5 +1,5 @@
 use crate::definitions::Vertex;
-use crate::utils::{load_glsl, ShaderStage};
+use crate::utils::{load_glsl, FontPallet, ShaderStage};
 use crate::System;
 use cgmath::{self, prelude::*};
 
@@ -220,6 +220,95 @@ impl Pipeline {
             render_pipeline,
             texture_bind: texture_bind_group,
         }
+    }
+
+    pub fn create_font_texture(
+        &mut self,
+        system: &mut System,
+        font_instance: &FontPallet,
+    ) -> wgpu::BindGroup {
+        let sampler = system.device.create_sampler(&wgpu::SamplerDescriptor {
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            address_mode_w: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            mipmap_filter: wgpu::FilterMode::Linear,
+            lod_min_clamp: 0.0,
+            lod_max_clamp: 0.0,
+            compare_function: wgpu::CompareFunction::Always,
+        });
+
+        let texture_extent = wgpu::Extent3d {
+            width: font_instance.max_w as u32,
+            height: font_instance.max_h as u32,
+            depth: 1,
+        };
+
+        let texture = system.device.create_texture(&wgpu::TextureDescriptor {
+            size: texture_extent,
+            array_layer_count: 1,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::R8Unorm,
+            usage: wgpu::TextureUsage::COPY_DST | wgpu::TextureUsage::SAMPLED,
+        });
+
+        let mut encoder = system
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+
+        for (_key, value) in font_instance.characters.iter() {
+            let image_buffer = system
+                .device
+                .create_buffer_mapped(value.data.len(), wgpu::BufferUsage::COPY_SRC)
+                .fill_from_slice(&value.data);
+
+            encoder.copy_buffer_to_texture(
+                wgpu::BufferCopyView {
+                    buffer: &image_buffer,
+                    offset: 0,
+                    row_pitch: value.width as u32,
+                    image_height: value.height as u32,
+                },
+                wgpu::TextureCopyView {
+                    texture: &texture,
+                    mip_level: 0,
+                    array_layer: 0,
+                    origin: wgpu::Origin3d {
+                        x: value.x as f32,
+                        y: value.y as f32,
+                        z: 0.0,
+                    },
+                },
+                wgpu::Extent3d {
+                    width: value.width,
+                    height: value.height,
+                    depth: 1,
+                },
+            );
+        }
+
+        let texture_view = texture.create_default_view();
+
+        let bind_group = system.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &self.texture_layout,
+            bindings: &[
+                wgpu::Binding {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&texture_view),
+                },
+                wgpu::Binding {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&sampler),
+                },
+            ],
+        });
+
+        system.queue.submit(&[encoder.finish()]);
+
+        bind_group
     }
 
     pub fn create_textures_array(

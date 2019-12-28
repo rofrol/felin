@@ -11,6 +11,11 @@ layout(location = 3) in int in_texture_index;
 layout(set = 0, binding = 0) uniform Globals { mat4 ortho; };
 layout(set = 0, binding = 1) uniform Locals { mat4 transform; };
 
+mat4 aMat4 = mat4(512.0, 0.0, 0.0, 0.0,
+                  0.0, 512.0, 0.0, 0.0,  
+                  0.0, 0.0, 1.0, 0.0,  
+                  0.0, 0.0, 0.0, 0.0);
+
 //Out cords
 layout(location = 0) out vec2 out_tex_coord;
 layout(location = 1) out vec4 out_color;

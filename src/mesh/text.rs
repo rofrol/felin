@@ -66,14 +66,15 @@ impl Text {
     pub fn build(&mut self, font: &FontPallet) -> Self {
         let mut batch = Batch::new();
         self.last_char_position = cgmath::Vector2::new(self.x, self.y);
-
+          
         for key in self.text.clone().chars() {
+         
             let character = font.get(key);
             let uv_positions = character.get_uv_position();
 
             if (self.last_char_position.x - self.x) > self.width {
                 self.last_char_position =
-                    cgmath::Vector2::new(self.x, self.last_char_position.y + 60.0);
+                    cgmath::Vector2::new(self.x, self.last_char_position.y + 20.0);
             }
 
             let letter = self.create_letter(uv_positions, character);
