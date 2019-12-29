@@ -66,16 +66,15 @@ impl Text {
     pub fn build(&mut self, font: &FontPallet) -> Self {
         let mut batch = Batch::new();
         self.last_char_position = cgmath::Vector2::new(self.x, self.y);
-          
+
         for key in self.text.clone().chars() {
-         
             let character = font.get(key);
             let uv_positions = character.get_uv_position();
 
             //Push letter to new row
             if (self.last_char_position.x - self.x) > self.width {
                 self.last_char_position =
-                    cgmath::Vector2::new(self.x, self.last_char_position.y + 20.0);
+                    cgmath::Vector2::new(self.x, self.last_char_position.y + 40.0);
             }
 
             let letter = self.create_letter(uv_positions, character);
@@ -105,11 +104,13 @@ impl Text {
     }
 
     fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh {
-        
         let vertices = vec![
             //Left top corner
             Vertex::new(
-                [self.last_char_position.x, self.last_char_position.y + character.offset_y],
+                [
+                    self.last_char_position.x,
+                    self.last_char_position.y + character.offset_y,
+                ],
                 self.color,
                 [uv.x[0], uv.y[0]],
                 self.texture_index,
@@ -117,7 +118,7 @@ impl Text {
             //Right top corner
             Vertex::new(
                 [
-                    self.last_char_position.x + character.width as f32 ,
+                    self.last_char_position.x + character.width as f32,
                     self.last_char_position.y + character.offset_y,
                 ],
                 self.color,
@@ -145,11 +146,12 @@ impl Text {
                 self.texture_index,
             ),
         ];
+
         let indices = vec![0, 1, 2, 2, 3, 0];
 
         self.last_char_position = self.last_char_position
             + cgmath::Vector2 {
-                x: (character.width as f32) as f32,
+                x: character.width as f32,
                 y: 0.0,
             };
 

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
-const PADDING: i32 = 32;
+const PADDING: i32 = 8;
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
@@ -98,7 +98,7 @@ impl FontPallet {
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
-                    y += h + PADDING;
+                    y += h + PADDING * 2;
                 }
 
                 if y >= self.max_h {

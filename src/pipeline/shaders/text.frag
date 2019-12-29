@@ -11,6 +11,8 @@ layout(location = 0) out vec4 o_target;
 
 void main() {
    o_target = vec4(in_color.rgb, texture(sampler2DArray(in_texture, s_color), vec3(uv_cords, layer_index)));
+
+   // o_target = vec4(in_color.rgb, 1.0);
 }
 
 
