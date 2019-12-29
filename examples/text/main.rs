@@ -36,7 +36,7 @@ impl Base for Main {
         let text_container = Text::new()
             .width(530.0)
             .height(500.0)
-            .text("Runescape")
+            .text("This is a text.")
             .x(350.0)
             .y(350.0)
             .build(&font);

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
+const PADDING: i32 = 32;
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
@@ -8,11 +9,12 @@ pub struct FontBitmap {
     pub y: f32,
     pub width: u32,
     pub height: u32,
+    pub offset_x: f32,
+    pub offset_y: f32,
+
     max_width: f32,
     max_height: f32,
 }
-
-const PADDING: i32 = 15;
 
 #[derive(Debug, Clone)]
 pub struct UvPosition {
@@ -59,7 +61,7 @@ pub struct FontPallet {
 impl FontPallet {
     /// parse a truetype file from bytes
     pub fn new(size: i32, font_data: &'static [u8]) -> Self {
-        let (max_w, max_h) = (size * 32, size * 32);
+        let (max_w, max_h) = (size * PADDING, size * PADDING);
 
         Self {
             font_data: &font_data,
@@ -74,11 +76,24 @@ impl FontPallet {
     /// manually cache characters
     pub fn cache(&mut self, s: &str) -> Self {
         let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
+
+        let (max_height, max_width) = self.character_offsets(s);
+
         for ch in s.chars() {
             if !self.characters.contains_key(&ch) {
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
                 let (w, h) = (metrics.width as i32, metrics.height as i32);
                 let (mut x, mut y) = self.cur_pt.into();
+                let (mut offset_x, mut offset_y) = (0, 0);
+
+                //Add offsets to smaller characters
+                if metrics.width < max_width as usize {
+                   
+                    offset_x = max_width - metrics.width as i32;
+                }
+                if metrics.height < max_height as usize {
+                    offset_y = max_height - metrics.height as i32;
+                }
 
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
@@ -99,6 +114,10 @@ impl FontPallet {
                         x: x as f32,
                         width: w as u32,
                         height: h as u32,
+                  
+                        offset_x: offset_x as f32,
+                        offset_y: offset_y as f32,
+
                         max_width: self.max_w as f32,
                         max_height: self.max_h as f32,
                     },
@@ -117,6 +136,21 @@ impl FontPallet {
             max_h: self.max_h,
             max_w: self.max_w,
         }
+    }
+
+    pub fn character_offsets(&mut self, s: &str) -> (i32, i32) {
+        let (mut max_height, mut max_width) = (0, 0);
+        let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
+        s.chars().into_iter().for_each(|ch| {
+            let (metrics, _bitmap) = font.rasterize(ch, self.size as f32);
+            if metrics.height > max_height {
+                max_height = metrics.height;
+            }
+            if metrics.width > max_width {
+                max_width = metrics.width;
+            }
+        });
+        return (max_height as i32, max_width as i32);
     }
 
     /// cache all ascii chars

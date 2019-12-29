@@ -72,6 +72,7 @@ impl Text {
             let character = font.get(key);
             let uv_positions = character.get_uv_position();
 
+            //Push letter to new row
             if (self.last_char_position.x - self.x) > self.width {
                 self.last_char_position =
                     cgmath::Vector2::new(self.x, self.last_char_position.y + 20.0);
@@ -103,43 +104,44 @@ impl Text {
         }
     }
 
-    fn create_letter(&mut self, letter: UvPosition, character: &FontBitmap) -> Mesh {
+    fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh {
+        
         let vertices = vec![
             //Left top corner
             Vertex::new(
-                [self.last_char_position.x, self.last_char_position.y],
+                [self.last_char_position.x, self.last_char_position.y + character.offset_y],
                 self.color,
-                [letter.x[0], letter.y[0]],
+                [uv.x[0], uv.y[0]],
                 self.texture_index,
             ),
             //Right top corner
             Vertex::new(
                 [
-                    self.last_char_position.x + character.width as f32,
-                    self.last_char_position.y,
+                    self.last_char_position.x + character.width as f32 ,
+                    self.last_char_position.y + character.offset_y,
                 ],
                 self.color,
-                [letter.x[1], letter.y[0]],
+                [uv.x[1], uv.y[0]],
                 self.texture_index,
             ),
             //Right bottom corner
             Vertex::new(
                 [
                     self.last_char_position.x + character.width as f32,
-                    self.last_char_position.y + character.height as f32,
+                    self.last_char_position.y + character.height as f32 + character.offset_y,
                 ],
                 self.color,
-                [letter.x[1], letter.y[1]],
+                [uv.x[1], uv.y[1]],
                 self.texture_index,
             ),
             //Left bottom
             Vertex::new(
                 [
                     self.last_char_position.x,
-                    self.last_char_position.y + character.height as f32,
+                    self.last_char_position.y + character.height as f32 + character.offset_y,
                 ],
                 self.color,
-                [letter.x[0], letter.y[1]],
+                [uv.x[0], uv.y[1]],
                 self.texture_index,
             ),
         ];
@@ -147,7 +149,7 @@ impl Text {
 
         self.last_char_position = self.last_char_position
             + cgmath::Vector2 {
-                x: (character.width as f32) as f32 + 5.0,
+                x: (character.width as f32) as f32,
                 y: 0.0,
             };
 
