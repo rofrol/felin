@@ -25,7 +25,7 @@ impl Base for Main {
         );
 
         let font: FontPallet =
-            FontPallet::new(48, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+            FontPallet::new(32, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
         let mut pipeline = pipeline::default::Pipeline::new(system);
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
@@ -36,7 +36,7 @@ impl Base for Main {
         let text_container = Text::new()
             .width(530.0)
             .height(500.0)
-            .text("tere 123.")
+            .text("Tere olen tonis ")
             .x(350.0)
             .y(350.0)
             .build(&font);

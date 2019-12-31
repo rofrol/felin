@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
-const PADDING: i32 = 8;
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
     pub data: Vec<u8>,
     pub x: f32,
     pub y: f32,
-    pub width: u32,
-    pub height: u32,
+    pub width: f32,
+    pub height: f32,
     pub offset_x: f32,
     pub offset_y: f32,
-
+    font_size: f32,
     max_width: f32,
     max_height: f32,
 }
@@ -29,18 +28,25 @@ fn ceil(value: f64, scale: i8) -> f64 {
 
 impl FontBitmap {
     pub fn get_uv_position(&self) -> UvPosition {
-        let x_start_position = ceil(((self.x - PADDING as f32) / self.max_width) as f64, 2) as f32;
+        let x_start_position = ceil(
+            ((self.x - self.font_size / 100.0) / self.max_width) as f64,
+            3,
+        ) as f32;
+
         let x_end_position = ceil(
-            ((self.x as u32 + self.width) as f32 / self.max_width) as f64,
-            2,
+            ((self.x + self.width + self.font_size / 100.0) as f32 / self.max_width) as f64,
+            3,
         ) as f32;
 
-        let y_start_position = ceil(((self.y - PADDING as f32) / self.max_height) as f64, 2) as f32;
+        let y_start_position = ceil(
+            ((self.y + self.font_size / 100.0) / self.max_height) as f64,
+            3,
+        ) as f32;
+
         let y_end_position = ceil(
-            ((self.y as u32 + self.height) as f32 / self.max_height) as f64,
-            2,
+            ((self.y + self.height + self.font_size / 100.0) as f32 / self.max_height) as f64,
+            3,
         ) as f32;
-
         return UvPosition {
             x: [x_start_position, x_end_position],
             y: [y_start_position, y_end_position],
@@ -61,7 +67,7 @@ pub struct FontPallet {
 impl FontPallet {
     /// parse a truetype file from bytes
     pub fn new(size: i32, font_data: &'static [u8]) -> Self {
-        let (max_w, max_h) = (size * PADDING, size * PADDING);
+        let (max_w, max_h) = (size * size as i32, size * size as i32);
 
         Self {
             font_data: &font_data,
@@ -88,7 +94,6 @@ impl FontPallet {
 
                 //Add offsets to smaller characters
                 if metrics.width < max_width as usize {
-                   
                     offset_x = max_width - metrics.width as i32;
                 }
                 if metrics.height < max_height as usize {
@@ -98,7 +103,7 @@ impl FontPallet {
                 //Put texture to new row, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
-                    y += h + PADDING * 2;
+                    y += h + self.size as i32;
                 }
 
                 if y >= self.max_h {
@@ -112,18 +117,17 @@ impl FontPallet {
                         data: bitmap,
                         y: y as f32,
                         x: x as f32,
-                        width: w as u32,
-                        height: h as u32,
-                  
+                        width: w as f32,
+                        height: h as f32,
                         offset_x: offset_x as f32,
                         offset_y: offset_y as f32,
-
+                        font_size: self.size as f32,
                         max_width: self.max_w as f32,
                         max_height: self.max_h as f32,
                     },
                 );
 
-                x += w + PADDING;
+                x += w + self.size as i32;
                 self.cur_pt = cgmath::Point2::new(x, y);
             }
         }

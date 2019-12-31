@@ -239,8 +239,8 @@ impl Pipeline {
                     },
                 },
                 wgpu::Extent3d {
-                    width: value.width,
-                    height: value.height,
+                    width: value.width as u32,
+                    height: value.height as u32,
                     depth: 1,
                 },
             );
