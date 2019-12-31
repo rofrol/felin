@@ -28,23 +28,18 @@ fn ceil(value: f64, scale: i8) -> f64 {
 
 impl FontBitmap {
     pub fn get_uv_position(&self) -> UvPosition {
-        let x_start_position = ceil(
-            ((self.x - self.font_size / 100.0) / self.max_width) as f64,
-            3,
-        ) as f32;
+        let padding = ceil((self.font_size / 100.0).into(), 1) as f32;
 
+        let x_start_position = ceil(((self.x - padding) / self.max_width) as f64, 3) as f32;
         let x_end_position = ceil(
-            ((self.x + self.width + self.font_size / 100.0) as f32 / self.max_width) as f64,
+            ((self.x + self.width + padding) as f32 / self.max_width) as f64,
             3,
         ) as f32;
 
-        let y_start_position = ceil(
-            ((self.y + self.font_size / 100.0) / self.max_height) as f64,
-            3,
-        ) as f32;
+        let y_start_position = ceil(((self.y - padding) / self.max_height) as f64, 3) as f32;
 
         let y_end_position = ceil(
-            ((self.y + self.height + self.font_size / 100.0) as f32 / self.max_height) as f64,
+            ((self.y + self.height + padding) / self.max_height) as f64,
             3,
         ) as f32;
         return UvPosition {
@@ -88,7 +83,7 @@ impl FontPallet {
         for ch in s.chars() {
             if !self.characters.contains_key(&ch) {
                 let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
-                let (w, h) = (metrics.width as i32, metrics.height as i32);
+                let (mut w, h) = (metrics.width as i32, metrics.height as i32);
                 let (mut x, mut y) = self.cur_pt.into();
                 let (mut offset_x, mut offset_y) = (0, 0);
 
@@ -100,7 +95,12 @@ impl FontPallet {
                     offset_y = max_height - metrics.height as i32;
                 }
 
-                //Put texture to new row, because current row is full
+                //Add space char width
+                if ch == ' ' {
+                    w = self.size / 3
+                }
+
+                //Put texture to new row on atlas, because current row is full
                 if x + w >= self.max_w {
                     x = 0;
                     y += h + self.size as i32;
@@ -127,6 +127,7 @@ impl FontPallet {
                     },
                 );
 
+                //Move character forward on texture atlas
                 x += w + self.size as i32;
                 self.cur_pt = cgmath::Point2::new(x, y);
             }
@@ -142,6 +143,7 @@ impl FontPallet {
         }
     }
 
+    //Get character offsets for correct alignment
     pub fn character_offsets(&mut self, s: &str) -> (i32, i32) {
         let (mut max_height, mut max_width) = (0, 0);
         let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();

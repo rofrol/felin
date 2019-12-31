@@ -1,7 +1,6 @@
 use crate::definitions::{Mesh, Vertex};
 use crate::utils::font::{FontBitmap, FontPallet, UvPosition};
 use crate::utils::Batch;
-use cgmath::{self, prelude::*};
 
 #[allow(dead_code)]
 #[derive(Clone)]
