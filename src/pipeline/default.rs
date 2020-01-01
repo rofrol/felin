@@ -353,6 +353,7 @@ impl Pipeline {
         pass.set_pipeline(&self.render_pipeline);
 
         pass.set_bind_group(0, &self.bind_group, &[]);
+        
         if textures.is_some() {
             pass.set_bind_group(1, textures.as_ref().unwrap(), &[]);
         } else {

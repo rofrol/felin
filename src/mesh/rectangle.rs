@@ -8,6 +8,8 @@ use lyon::tessellation::FillOptions;
 
 use collision::{prelude::*, primitive, Aabb2};
 
+use crate::prelude::*;
+
 #[derive(Clone)]
 pub struct Rectangle {
     pub x: f32,
@@ -16,13 +18,13 @@ pub struct Rectangle {
     pub height: f32,
     pub color: [f32; 4],
     pub collider: Aabb2<f32>,
-    buffers: VertexBuffers<Vertex, u16>,
+    pub buffers: VertexBuffers<Vertex, u16>,
 }
 
-#[allow(dead_code)]
-impl Rectangle {
-    pub fn new() -> Rectangle {
-        Rectangle {
+
+impl Default for Rectangle {
+    fn default() -> Self { 
+        Self {
             x: 50.0,
             y: 50.0,
             width: 100.0,
@@ -35,33 +37,38 @@ impl Rectangle {
             color: [1.0, 1.0, 1.0, 1.0],
         }
     }
+}
 
-    pub fn x(&mut self, x: f32) -> &mut Self {
+#[allow(dead_code)]
+impl ElementCore for Rectangle {
+    fn x(&mut self, x: f32) {
         self.x = x;
-        self
     }
 
-    pub fn y(&mut self, y: f32) -> &mut Self {
+    fn y(&mut self, y: f32) {
         self.y = y;
-        self
     }
 
-    pub fn width(&mut self, width: f32) -> &mut Self {
-        self.width = width;
-        self
+    fn get_x(&self) -> f32 {
+        self.x
     }
 
-    pub fn height(&mut self, height: f32) -> &mut Self {
-        self.height = height;
-        self
+    fn get_y(&self) -> f32 {
+        self.y
     }
 
-    pub fn color(&mut self, color: [f32; 4]) -> &mut Self {
+    fn color(&mut self, color: [f32; 4]) {
         self.color = color;
-        self
     }
 
-    pub fn build(&mut self) -> Rectangle {
+    fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.buffers.vertices.clone(),
+            indices: self.buffers.indices.clone(),
+        }
+    }
+
+    fn build(&mut self) {
         let mut buffers: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
 
@@ -78,31 +85,29 @@ impl Rectangle {
         )
         .unwrap();
 
-        self.buffers = buffers.clone();
+        self.buffers = buffers;
+        self.collider = self.get_collider();
+    }
+}
 
-        Rectangle {
-            x: self.x,
-            y: self.y,
-            buffers: buffers,
-            height: self.height,
-            collider: self.get_collider(),
-            width: self.width,
-            color: self.color,
-        }
+impl ElementRectangle for Rectangle {
+    fn width(&mut self, width: f32) -> &mut Self {
+        self.width = width;
+        self
     }
 
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.buffers.vertices.clone(),
-            indices: self.buffers.indices.clone(),
-        }
+    fn height(&mut self, height: f32) -> &mut Self {
+        self.height = height;
+        self
     }
+}
 
-    pub fn contains(&self, point: cgmath::Point2<f32>) -> bool {
+impl ElementCollider for Rectangle {
+    fn contains(&self, point: cgmath::Point2<f32>) -> bool {
         self.collider.contains(&point)
     }
 
-    pub fn get_collider(&self) -> Aabb2<f32> {
+    fn get_collider(&self) -> Aabb2<f32> {
         let transform: cgmath::Decomposed<cgmath::Vector2<f32>, cgmath::Basis2<f32>> =
             cgmath::Decomposed {
                 scale: 1.0,
@@ -117,3 +122,4 @@ impl Rectangle {
             .transform(&transform)
     }
 }
+

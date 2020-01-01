@@ -4,7 +4,7 @@ pub mod mesh;
 pub mod pipeline;
 pub mod system;
 pub mod utils;
-
+pub mod prelude;
 
 pub use events::Event;
 pub use system::System;
@@ -57,15 +57,13 @@ pub fn app<E: Base>() {
         screen_descriptor: sc_desc,
         queue,
         window: WindowBuilder::new()
-        .with_title("title")
-        .with_resizable(true),
+            .with_title("title")
+            .with_resizable(true),
     };
 
     let mut example = E::init(&mut system);
 
-    let window = system.window.clone()
-        .build(&window_event_loop)
-        .unwrap();
+    let window = system.window.clone().build(&window_event_loop).unwrap();
 
     let hidpi_factor = window.hidpi_factor();
     let size = window.inner_size().to_physical(hidpi_factor);
@@ -74,7 +72,9 @@ pub fn app<E: Base>() {
     system.screen_descriptor.width = size.width.round() as u32;
     system.screen_descriptor.height = size.height.round() as u32;
 
-    let mut swap_chain = system.device.create_swap_chain(&surface, &system.screen_descriptor);
+    let mut swap_chain = system
+        .device
+        .create_swap_chain(&surface, &system.screen_descriptor);
     let mut input_events = Event::new();
 
     ///////////////////////////////////////////////////////////////////////////

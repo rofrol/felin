@@ -1,4 +1,5 @@
 use crate::definitions::{Mesh, Vertex};
+use crate::prelude::*;
 use crate::utils::font::{FontBitmap, FontPallet, UvPosition};
 use crate::utils::Batch;
 
@@ -10,18 +11,17 @@ pub struct Text {
     pub text: String,
     pub width: f32,
     pub height: f32,
-    row_height: f32,
-    last_char_position: cgmath::Vector2<f32>,
+    pub row_height: f32,
+    pub last_char_position: cgmath::Vector2<f32>,
 
-    texture_index: i32,
-    color: [f32; 4],
-    vertices: Vec<Vertex>,
-    indices: Vec<u16>,
+    pub texture_index: i32,
+    pub color: [f32; 4],
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
 }
 
-#[allow(dead_code)]
-impl Text {
-    pub fn new() -> Self {
+impl Default for Text {
+    fn default() -> Self {
         Self {
             x: 100.0,
             y: 100.0,
@@ -36,72 +36,61 @@ impl Text {
             text: "".to_string(),
         }
     }
+}
 
-    pub fn x(&mut self, x: f32) -> &mut Self {
+#[allow(dead_code)]
+impl ElementCore for Text {
+    fn x(&mut self, x: f32) {
         self.x = x;
-        self
     }
 
-    pub fn width(&mut self, width: f32) -> &mut Self {
-        self.width = width;
-        self
-    }
-
-    pub fn height(&mut self, height: f32) -> &mut Self {
-        self.height = height;
-        self
-    }
-
-    pub fn y(&mut self, y: f32) -> &mut Self {
+    fn y(&mut self, y: f32) {
         self.y = y;
-        self
     }
 
-    pub fn text(&mut self, text: &str) -> &mut Self {
-        self.text = text.to_string();
-        self
+    fn get_x(&self) -> f32 {
+        self.x
     }
 
-    pub fn build(&mut self, font: &FontPallet) -> Self {
-        let mut batch = Batch::new();
-        self.last_char_position = cgmath::Vector2::new(self.x, self.y);
-
-        for key in self.text.clone().chars() {
-            let character = font.get(key);
-            let uv_positions = character.get_uv_position();
-
-            //Push letter to new row
-            if (self.last_char_position.x - self.x) > self.width {
-                self.last_char_position =
-                    cgmath::Vector2::new(self.x, self.last_char_position.y + 40.0);
-            }
-
-            let letter = self.create_letter(uv_positions, character);
-            batch.add_mesh(&letter);
-        }
-
-        Self {
-            x: self.x,
-            y: self.y,
-            width: self.width,
-            height: self.height,
-            last_char_position: self.last_char_position,
-            row_height: self.row_height,
-            color: self.color,
-            vertices: batch.vertices,
-            indices: batch.indices,
-            texture_index: self.texture_index,
-            text: self.text.clone(),
-        }
+    fn get_y(&self) -> f32 {
+        self.y
     }
 
-    pub fn mesh(&mut self) -> Mesh {
+    fn color(&mut self, color: [f32; 4]) {
+        self.color = color;
+    }
+
+    fn mesh(&mut self) -> Mesh {
         Mesh {
             vertices: self.vertices.clone(),
             indices: self.indices.clone(),
         }
     }
 
+    fn build(&mut self) {
+        let mut batch = Batch::new();
+        self.last_char_position = cgmath::Vector2::new(self.x, self.y);
+
+        // for key in self.text.clone().chars() {
+        //     let character = font.get(key);
+        //     let uv_positions = character.get_uv_position();
+
+        //     //Push letter to new row
+        //     if (self.last_char_position.x - self.x) > self.width {
+        //         self.last_char_position =
+        //             cgmath::Vector2::new(self.x, self.last_char_position.y + 40.0);
+        //     }
+
+        //     let letter = self.create_letter(uv_positions, character);
+        //     batch.add_mesh(&letter);
+        // }
+
+        self.vertices = batch.vertices;
+        self.indices = batch.indices;
+    }
+}
+
+impl Text {
     fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh {
         let vertices = vec![
             //Left top corner
@@ -156,4 +145,23 @@ impl Text {
 
         Mesh { vertices, indices }
     }
+
+    fn text(&mut self, text: &str) -> &mut Self {
+        self.text = text.to_string();
+        self
+    }
 }
+
+impl ElementRectangle for Text {
+    fn width(&mut self, width: f32) -> &mut Self {
+        self.width = width;
+        self
+    }
+
+    fn height(&mut self, height: f32) -> &mut Self {
+        self.height = height;
+        self
+    }
+}
+
+

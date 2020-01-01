@@ -1,4 +1,5 @@
 use crate::definitions::{Mesh, Vertex};
+use crate::prelude::*;
 use collision::{prelude::*, primitive, Aabb2};
 
 #[derive(Clone)]
@@ -8,16 +9,15 @@ pub struct Image {
     pub width: f32,
     pub height: f32,
     pub collider: Aabb2<f32>,
-    vertices: Vec<Vertex>,
-    indices: Vec<u16>,
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
     pub color: [f32; 4],
-    texture_index: i32,
+    pub texture_index: i32,
 }
 
-#[allow(dead_code)]
-impl Image {
-    pub fn new() -> Image {
-        Image {
+impl Default for Image {
+    fn default() -> Self {
+        Self {
             x: 100.0,
             y: 100.0,
             width: 100.0,
@@ -32,33 +32,38 @@ impl Image {
             texture_index: 0,
         }
     }
+}
 
-    pub fn x(&mut self, x: f32) -> &mut Self {
+#[allow(dead_code)]
+impl ElementCore for Image {
+    fn color(&mut self, color: [f32; 4]) {
+        self.color = color;
+    }
+
+    fn x(&mut self, x: f32) {
         self.x = x;
-        self
     }
 
-    pub fn y(&mut self, y: f32) -> &mut Self {
+    fn y(&mut self, y: f32) {
         self.y = y;
-        self
     }
 
-    pub fn width(&mut self, width: f32) -> &mut Self {
-        self.width = width;
-        self
+    fn get_x(&self) -> f32 {
+        self.x
     }
 
-    pub fn height(&mut self, height: f32) -> &mut Self {
-        self.height = height;
-        self
+    fn get_y(&self) -> f32 {
+        self.y
     }
 
-    pub fn use_texture(&mut self, index: i32) -> &mut Self {
-        self.texture_index = index;
-        self
+    fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.vertices.clone(),
+            indices: self.indices.clone(),
+        }
     }
 
-    pub fn build(&mut self) -> Image {
+    fn build(&mut self) {
         let vertices = vec![
             //Left top corner
             Vertex {
@@ -90,22 +95,14 @@ impl Image {
             },
         ];
 
-        let indices = vec![0, 1, 2, 2, 3, 0];
-
-        Image {
-            x: self.x,
-            y: self.y,
-            height: self.height,
-            vertices,
-            indices,
-            collider: self.get_collider(),
-            color: self.color,
-            width: self.width,
-            texture_index: self.texture_index,
-        }
+        self.indices = vec![0, 1, 2, 2, 3, 0];
+        self.vertices = vertices;
+        self.collider = self.get_collider();
     }
+}
 
-    pub fn get_collider(&self) -> Aabb2<f32> {
+impl ElementCollider for Image {
+    fn get_collider(&self) -> Aabb2<f32> {
         let transform: cgmath::Decomposed<cgmath::Vector2<f32>, cgmath::Basis2<f32>> =
             cgmath::Decomposed {
                 scale: 1.0,
@@ -120,14 +117,26 @@ impl Image {
             .transform(&transform)
     }
 
-    pub fn contains(&self, point: cgmath::Point2<f32>) -> bool {
+    fn contains(&self, point: cgmath::Point2<f32>) -> bool {
         self.collider.contains(&point)
     }
+}
 
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.vertices.clone(),
-            indices: self.indices.clone(),
-        }
+impl ElementRectangle for Image {
+    fn width(&mut self, width: f32) -> &mut Self {
+        self.width = width;
+        self
+    }
+
+    fn height(&mut self, height: f32) -> &mut Self {
+        self.height = height;
+        self
+    }
+}
+
+impl ElementImage for Image {
+    fn use_texture(&mut self, index: i32) -> &mut Self {
+        self.texture_index = index;
+        self
     }
 }

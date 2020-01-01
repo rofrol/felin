@@ -9,6 +9,8 @@ use lyon::tessellation::FillOptions;
 use cgmath::{self, prelude::*};
 use collision::{prelude::*, primitive, Aabb2};
 
+use crate::prelude::*;
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct Circle {
@@ -17,46 +19,41 @@ pub struct Circle {
     pub radius: f32,
     pub collider: Aabb2<f32>,
     pub color: [f32; 4],
-    buffers: VertexBuffers<Vertex, u16>,
+    pub buffers: VertexBuffers<Vertex, u16>,
 }
 
+
+
 #[allow(dead_code)]
-impl Circle {
-    pub fn new() -> Circle {
-        Circle {
-            radius: 50.0,
-            x: 100.0,
-            y: 100.0,
-            collider: Aabb2 {
-                min: cgmath::Point2::new(0.0, 0.0),
-                max: cgmath::Point2::new(0.0, 0.0),
-            },
-            color: [1.0, 1.0, 1.0, 1.0],
-            buffers: VertexBuffers::new(),
+impl ElementCore for Circle {
+    fn x(&mut self, x: f32) {
+        self.x = x;
+    }
+
+    fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    fn get_y(&self) -> f32 {
+        self.y
+    }
+
+    fn color(&mut self, color: [f32; 4]) {
+        self.color = color;
+    }
+
+    fn y(&mut self, y: f32) {
+        self.y = y;
+    }
+
+    fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.buffers.vertices.clone(),
+            indices: self.buffers.indices.clone(),
         }
     }
 
-    pub fn x(&mut self, x: f32) -> &mut Self {
-        self.x = x;
-        self
-    }
-
-    pub fn radius(&mut self, radius: f32) -> &mut Self {
-        self.radius = radius;
-        self
-    }
-
-    pub fn color(&mut self, color: [f32; 4]) -> &mut Self {
-        self.color = color;
-        self
-    }
-
-    pub fn y(&mut self, y: f32) -> &mut Self {
-        self.y = y;
-        self
-    }
-
-    pub fn build(&self) -> Circle {
+    fn build(&mut self) {
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
         //Draw vertices with Lyon
@@ -64,39 +61,33 @@ impl Circle {
             point(self.x, self.y),
             self.radius,
             &fill_options,
-            &mut BuffersBuilder::new(&mut mesh, |vertex: tessellation::FillVertex| {
-                Vertex {
-                     in_position: vertex.position.to_array(),
-                     in_color: self.color,
-                     tex_pos: [0.0, 0.0],
-                     texture_id: -1,
-                }
+            &mut BuffersBuilder::new(&mut mesh, |vertex: tessellation::FillVertex| Vertex {
+                in_position: vertex.position.to_array(),
+                in_color: self.color,
+                tex_pos: [0.0, 0.0],
+                texture_id: -1,
             }),
         )
         .unwrap();
 
-        Circle {
-            radius: self.radius,
-            collider: self.get_collider(),
-            x: self.x,
-            y: self.y,
-            color: self.color,
-            buffers: mesh,
-        }
+        self.collider = self.get_collider();
+        self.buffers = mesh;
     }
+}
 
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.buffers.vertices.clone(),
-            indices: self.buffers.indices.clone(),
-        }
+impl ElementCircle for Circle {
+    fn radius(&mut self, radius: f32) -> &mut Self {
+        self.radius = radius;
+        self
     }
+}
 
-    pub fn contains(&self, point: cgmath::Point2<f32>) -> bool {
+impl ElementCollider for Circle {
+    fn contains(&self, point: cgmath::Point2<f32>) -> bool {
         self.collider.contains(&point)
     }
 
-    pub fn get_collider(&self) -> Aabb2<f32> {
+    fn get_collider(&self) -> Aabb2<f32> {
         let transform: cgmath::Decomposed<cgmath::Vector2<f32>, cgmath::Basis2<f32>> =
             cgmath::Decomposed {
                 scale: 1.0,
@@ -106,5 +97,23 @@ impl Circle {
         return primitive::Circle::new(self.radius)
             .compute_bound()
             .transform(&transform);
+    }
+}
+
+
+
+impl Default for Circle {
+    fn default() -> Self { 
+        Self {
+            radius: 50.0,
+            x: 100.0,
+            y: 100.0,
+            collider: Aabb2 {
+                min: cgmath::Point2::new(0.0, 0.0),
+                max: cgmath::Point2::new(0.0, 0.0),
+            },
+            color: [1.0, 1.0, 1.0, 1.0],
+            buffers: VertexBuffers::new(), 
+        }
     }
 }

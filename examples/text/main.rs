@@ -1,6 +1,6 @@
 use felin::mesh::Text;
+use felin::prelude::*;
 use felin::{app, pipeline, utils::FontPallet, Base, Event, System};
-
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 pub struct Main {
@@ -27,13 +27,16 @@ impl Base for Main {
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);
 
-        let text_container = Text::new()
-            .width(530.0)
-            .height(500.0)
-            .text("Tere olen tonis !")
-            .x(350.0)
-            .y(350.0)
-            .build(&font);
+        let mut text_container = Text {
+            width: 530.0,
+            height: 500.0,
+            text: "Tere olen tonis !".to_string(),
+            x: 350.0,
+            y: 350.0,
+            ..Default::default()
+        };
+
+        text_container.build();
 
         Main {
             text_pipeline,
@@ -43,7 +46,9 @@ impl Base for Main {
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
-        if events.resized { self.text_pipeline.resize(system); };
+        if events.resized {
+            self.text_pipeline.resize(system);
+        };
     }
 
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System) {
