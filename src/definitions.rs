@@ -39,13 +39,6 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-#[derive(Clone)]
-pub enum Elements {
-    Circle(Circle),
-    Image(Image),
-    Rectangle(Rectangle),
-    Text(Text),
-}
 
 //Single Node
 
