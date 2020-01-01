@@ -61,28 +61,33 @@ impl Image {
     pub fn build(&mut self) -> Image {
         let vertices = vec![
             //Left top corner
-            Vertex::new([self.x, self.y], self.color, [0.0, 0.0], self.texture_index),
+            Vertex {
+                in_position: [self.x, self.y],
+                in_color: self.color,
+                tex_pos: [0.0, 0.0],
+                texture_id: self.texture_index,
+            },
             //Right top corner
-            Vertex::new(
-                [self.x + self.width, self.y],
-                self.color,
-                [1.0, 0.0],
-                self.texture_index,
-            ),
+            Vertex {
+                in_position: [self.x + self.width, self.y],
+                in_color: self.color,
+                tex_pos: [1.0, 0.0],
+                texture_id: self.texture_index,
+            },
             //Right bottom corner
-            Vertex::new(
-                [self.x + self.width, self.y + self.height],
-                self.color,
-                [1.0, 1.0],
-                self.texture_index,
-            ),
+            Vertex {
+                in_position: [self.x + self.width, self.y + self.height],
+                in_color: self.color,
+                tex_pos: [1.0, 1.0],
+                texture_id: self.texture_index,
+            },
             //Left bottom
-            Vertex::new(
-                [self.x, self.y + self.height],
-                self.color,
-                [0.0, 1.0],
-                self.texture_index,
-            ),
+            Vertex {
+                in_position: [self.x, self.y + self.height],
+                in_color: self.color,
+                tex_pos: [0.0, 1.0],
+                texture_id: self.texture_index,
+            },
         ];
 
         let indices = vec![0, 1, 2, 2, 3, 0];

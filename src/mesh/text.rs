@@ -105,45 +105,45 @@ impl Text {
     fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh {
         let vertices = vec![
             //Left top corner
-            Vertex::new(
-                [
+            Vertex {
+                in_position: [
                     self.last_char_position.x,
                     self.last_char_position.y + character.offset_y,
                 ],
-                self.color,
-                [uv.x[0], uv.y[0]],
-                self.texture_index,
-            ),
+                in_color: self.color,
+                tex_pos: [uv.x[0], uv.y[0]],
+                texture_id: self.texture_index,
+            },
             //Right top corner
-            Vertex::new(
-                [
+            Vertex {
+                in_position: [
                     self.last_char_position.x + character.width as f32,
                     self.last_char_position.y + character.offset_y,
                 ],
-                self.color,
-                [uv.x[1], uv.y[0]],
-                self.texture_index,
-            ),
+                in_color: self.color,
+                tex_pos: [uv.x[1], uv.y[0]],
+                texture_id: self.texture_index,
+            },
             //Right bottom corner
-            Vertex::new(
-                [
+            Vertex {
+                in_position: [
                     self.last_char_position.x + character.width as f32,
                     self.last_char_position.y + character.height as f32 + character.offset_y,
                 ],
-                self.color,
-                [uv.x[1], uv.y[1]],
-                self.texture_index,
-            ),
+                in_color: self.color,
+                tex_pos: [uv.x[1], uv.y[1]],
+                texture_id: self.texture_index,
+            },
             //Left bottom
-            Vertex::new(
-                [
+            Vertex {
+                in_position: [
                     self.last_char_position.x,
                     self.last_char_position.y + character.height as f32 + character.offset_y,
                 ],
-                self.color,
-                [uv.x[0], uv.y[1]],
-                self.texture_index,
-            ),
+                in_color: self.color,
+                tex_pos: [uv.x[0], uv.y[1]],
+                texture_id: self.texture_index,
+            },
         ];
 
         let indices = vec![0, 1, 2, 2, 3, 0];

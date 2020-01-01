@@ -12,21 +12,6 @@ pub struct Vertex {
     pub texture_id: i32,
 }
 
-impl Vertex {
-    pub fn new(
-        in_position: [f32; 2],
-        in_color: [f32; 4],
-        tex_pos: [f32; 2],
-        texture_id: i32,
-    ) -> Self {
-        Self {
-            in_position,
-            in_color,
-            tex_pos,
-            texture_id,
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct Mesh {

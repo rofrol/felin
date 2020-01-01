@@ -70,7 +70,12 @@ impl Rectangle {
             &rect(self.x, self.y, self.width, self.height),
             &fill_options,
             &mut BuffersBuilder::new(&mut buffers, |vertex: tessellation::FillVertex| {
-                Vertex::new(vertex.position.to_array(), self.color, [0.0, 0.0], -1)
+                Vertex {
+                    in_position: vertex.position.to_array(),
+                    in_color: self.color,
+                    tex_pos: [0.0, 0.0],
+                    texture_id: -1,
+               }
             }),
         )
         .unwrap();

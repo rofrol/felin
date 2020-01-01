@@ -65,7 +65,12 @@ impl Circle {
             self.radius,
             &fill_options,
             &mut BuffersBuilder::new(&mut mesh, |vertex: tessellation::FillVertex| {
-                Vertex::new(vertex.position.to_array(), self.color, [0.0, 0.0], -1)
+                Vertex {
+                     in_position: vertex.position.to_array(),
+                     in_color: self.color,
+                     tex_pos: [0.0, 0.0],
+                     texture_id: -1,
+                }
             }),
         )
         .unwrap();
