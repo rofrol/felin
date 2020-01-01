@@ -12,7 +12,6 @@ pub struct Vertex {
     pub texture_id: i32,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Mesh {
     pub vertices: Vec<Vertex>,

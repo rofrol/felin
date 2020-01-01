@@ -69,13 +69,11 @@ impl Rectangle {
         fill_rectangle(
             &rect(self.x, self.y, self.width, self.height),
             &fill_options,
-            &mut BuffersBuilder::new(&mut buffers, |vertex: tessellation::FillVertex| {
-                Vertex {
-                    in_position: vertex.position.to_array(),
-                    in_color: self.color,
-                    tex_pos: [0.0, 0.0],
-                    texture_id: -1,
-               }
+            &mut BuffersBuilder::new(&mut buffers, |vertex: tessellation::FillVertex| Vertex {
+                in_position: vertex.position.to_array(),
+                in_color: self.color,
+                tex_pos: [0.0, 0.0],
+                texture_id: -1,
             }),
         )
         .unwrap();

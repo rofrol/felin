@@ -12,7 +12,6 @@ layout(set = 0, binding = 0) uniform Globals { mat4 ortho; };
 layout(set = 0, binding = 1) uniform Locals { mat4 transform; };
 
 
-
 //Out cords
 layout(location = 0) out vec2 out_tex_coord;
 layout(location = 1) out vec4 out_color;

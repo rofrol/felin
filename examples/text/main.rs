@@ -22,7 +22,7 @@ impl Base for Main {
         );
 
         let font: FontPallet =
-            FontPallet::new(23, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+            FontPallet::new(32, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);

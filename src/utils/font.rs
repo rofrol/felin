@@ -28,7 +28,7 @@ fn ceil(value: f64, scale: i8) -> f64 {
 
 impl FontBitmap {
     pub fn get_uv_position(&self) -> UvPosition {
-        let padding = ceil((self.font_size / 100.0).into(), 1) as f32;
+        let padding = ceil((self.font_size / 100.0).into(), 2) as f32;
 
         let x_start_position = ceil(((self.x - padding) / self.max_width) as f64, 3) as f32;
         let x_end_position = ceil(
