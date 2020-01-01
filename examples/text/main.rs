@@ -25,7 +25,6 @@ impl Base for Main {
             FontPallet::new(23, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
-
         let font_texture = text_pipeline.create_font_texture(system, &font);
 
         let text_container = Text::new()
@@ -44,9 +43,7 @@ impl Base for Main {
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
-        if events.resized {
-            self.text_pipeline.resize(system);
-        };
+        if events.resized { self.text_pipeline.resize(system); };
     }
 
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System) {
