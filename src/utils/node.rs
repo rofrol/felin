@@ -35,22 +35,27 @@ impl NodeWalker {
         self.tree.cursor()
     }
 
-    pub fn add(&mut self, node: Node) -> froggy::Pointer<Node> {
+    pub fn add(&mut self, node: &mut Node) -> froggy::Pointer<Node> {
         if node.parent.is_some() {
             let parent = &mut self.tree[&node.parent.clone().unwrap()];
             let result = parent.get_grid().get_position(&node.area.clone().unwrap());
-            let parent_body = Rc::get_mut(&mut parent.body).unwrap();
+            let parent_body = Rc::get_mut(&mut parent.body).expect("failed to get rc 1");
 
-            let mut node_clone = node.clone();
-            let element = Rc::get_mut(&mut node_clone.body).expect("failed to get rc");
+            let element = Rc::get_mut(&mut node.body).expect("failed to get rc 2");
 
             element.x(parent_body.get_x() + result.x);
-            element.y(parent_body.get_y() + result.x);
+            element.y(parent_body.get_y() + result.y);
+
+            if let Some(el) = element.is_resizable() {
+                el.width(result.width);
+                el.height(result.height);
+            }
+            
             element.build();
 
-            return self.tree.create(node);
+            return self.tree.create(node.clone());
         } else {
-            return self.tree.create(node);
+            return self.tree.create(node.clone());
         }
     }
 

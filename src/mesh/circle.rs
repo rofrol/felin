@@ -22,8 +22,6 @@ pub struct Circle {
     pub buffers: VertexBuffers<Vertex, u16>,
 }
 
-
-
 #[allow(dead_code)]
 impl ElementCore for Circle {
     fn x(&mut self, x: f32) {
@@ -73,13 +71,20 @@ impl ElementCore for Circle {
         self.collider = self.get_collider();
         self.buffers = mesh;
     }
+
+    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> {
+        Some(self)
+    }
 }
 
-impl ElementCircle for Circle {
-    fn radius(&mut self, radius: f32) -> &mut Self {
+impl ElememtResizable for Circle {
+    fn radius(&mut self, radius: f32) {
         self.radius = radius;
-        self
     }
+
+    fn width(&mut self, width: f32) {}
+
+    fn height(&mut self, height: f32) {}
 }
 
 impl ElementCollider for Circle {
@@ -100,10 +105,8 @@ impl ElementCollider for Circle {
     }
 }
 
-
-
 impl Default for Circle {
-    fn default() -> Self { 
+    fn default() -> Self {
         Self {
             radius: 50.0,
             x: 100.0,
@@ -113,7 +116,7 @@ impl Default for Circle {
                 max: cgmath::Point2::new(0.0, 0.0),
             },
             color: [1.0, 1.0, 1.0, 1.0],
-            buffers: VertexBuffers::new(), 
+            buffers: VertexBuffers::new(),
         }
     }
 }

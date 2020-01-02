@@ -39,7 +39,6 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-
 //Single Node
 
 #[derive(Clone)]
@@ -55,13 +54,19 @@ pub struct Node {
 pub trait ElementCore {
     fn x(&mut self, x: f32);
     fn y(&mut self, y: f32);
-    fn get_x(&self) -> f32; 
-    fn get_y(&self) -> f32; 
+    fn get_x(&self) -> f32;
+    fn get_y(&self) -> f32;
     fn color(&mut self, color: [f32; 4]);
     fn mesh(&mut self) -> Mesh;
     fn build(&mut self);
+    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable>;
 }
 
+pub trait ElememtResizable {
+    fn width(&mut self, width: f32);
+    fn height(&mut self, height: f32);
+    fn radius(&mut self, radius: f32);
+}
 
 pub trait ElementImageBuild {
     fn build(&mut self, font: &FontPallet);
@@ -72,15 +77,6 @@ pub trait ElementCollider {
     fn get_collider(&self) -> Aabb2<f32>;
 }
 
-pub trait ElementRectangle {
-    fn width(&mut self, width: f32) -> &mut Self;
-    fn height(&mut self, height: f32) -> &mut Self;
-}
-
-pub trait ElementCircle {
-    fn radius(&mut self, radius: f32) -> &mut Self;
-}
-
 pub trait ElementImage {
-    fn use_texture(&mut self, index: i32) -> &mut Self;
+    fn use_texture(&mut self, index: i32);
 }

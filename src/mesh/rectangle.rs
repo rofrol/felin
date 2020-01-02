@@ -21,9 +21,8 @@ pub struct Rectangle {
     pub buffers: VertexBuffers<Vertex, u16>,
 }
 
-
 impl Default for Rectangle {
-    fn default() -> Self { 
+    fn default() -> Self {
         Self {
             x: 50.0,
             y: 50.0,
@@ -88,18 +87,20 @@ impl ElementCore for Rectangle {
         self.buffers = buffers;
         self.collider = self.get_collider();
     }
+
+    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> { Some(self) }
 }
 
-impl ElementRectangle for Rectangle {
-    fn width(&mut self, width: f32) -> &mut Self {
+impl ElememtResizable for Rectangle {
+    fn width(&mut self, width: f32) {
         self.width = width;
-        self
     }
 
-    fn height(&mut self, height: f32) -> &mut Self {
+    fn height(&mut self, height: f32) {
         self.height = height;
-        self
     }
+
+    fn radius(&mut self, radius: f32) {}
 }
 
 impl ElementCollider for Rectangle {
@@ -122,4 +123,3 @@ impl ElementCollider for Rectangle {
             .transform(&transform)
     }
 }
-

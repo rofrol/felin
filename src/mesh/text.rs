@@ -88,6 +88,8 @@ impl ElementCore for Text {
         self.vertices = batch.vertices;
         self.indices = batch.indices;
     }
+
+    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> { None }
 }
 
 impl Text {
@@ -152,16 +154,14 @@ impl Text {
     }
 }
 
-impl ElementRectangle for Text {
-    fn width(&mut self, width: f32) -> &mut Self {
+impl ElememtResizable for Text {
+    fn width(&mut self, width: f32) {
         self.width = width;
-        self
     }
 
-    fn height(&mut self, height: f32) -> &mut Self {
+    fn radius(&mut self, radius: f32) {}
+
+    fn height(&mut self, height: f32) {
         self.height = height;
-        self
     }
 }
-
-

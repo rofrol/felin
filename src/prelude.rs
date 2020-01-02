@@ -1,3 +1,3 @@
 pub use crate::definitions::{
-    ElementCircle, ElementCollider, ElementCore, ElementImage, ElementImageBuild, ElementRectangle,
+    ElememtResizable, ElementCollider, ElementCore, ElementImage, ElementImageBuild,
 };

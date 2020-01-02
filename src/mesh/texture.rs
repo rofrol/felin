@@ -99,6 +99,10 @@ impl ElementCore for Image {
         self.vertices = vertices;
         self.collider = self.get_collider();
     }
+
+    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> {
+        Some(self)
+    }
 }
 
 impl ElementCollider for Image {
@@ -122,21 +126,20 @@ impl ElementCollider for Image {
     }
 }
 
-impl ElementRectangle for Image {
-    fn width(&mut self, width: f32) -> &mut Self {
+impl ElememtResizable for Image {
+    fn width(&mut self, width: f32) {
         self.width = width;
-        self
     }
 
-    fn height(&mut self, height: f32) -> &mut Self {
+    fn radius(&mut self, radius: f32) {}
+
+    fn height(&mut self, height: f32) {
         self.height = height;
-        self
     }
 }
 
 impl ElementImage for Image {
-    fn use_texture(&mut self, index: i32) -> &mut Self {
+    fn use_texture(&mut self, index: i32) {
         self.texture_index = index;
-        self
     }
 }
