@@ -1,29 +1,22 @@
 use crate::definitions::{Mesh, Vertex};
 use crate::prelude::*;
+use crate::utils::Style;
 use collision::{prelude::*, primitive, Aabb2};
-use std::cell::RefCell;
-use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Image {
-    pub x: f32,
-    pub y: f32,
-    pub width: f32,
-    pub height: f32,
+    pub style: Style,
     pub collider: Aabb2<f32>,
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
     pub color: [f32; 4],
-    pub texture_index: i32,
+    pub texture: i32,
 }
 
 impl Default for Image {
     fn default() -> Self {
         Self {
-            x: 100.0,
-            y: 100.0,
-            width: 100.0,
-            height: 100.0,
+            style: Style::default(),
             color: [0.0, 0.0, 0.0, 0.0],
             collider: Aabb2 {
                 min: cgmath::Point2::new(0.0, 0.0),
@@ -31,69 +24,54 @@ impl Default for Image {
             },
             vertices: Vec::new(),
             indices: Vec::new(),
-            texture_index: 0,
+            texture: 0,
+        }
+    }
+}
+
+impl Image {
+    pub fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.vertices.clone(),
+            indices: self.indices.clone(),
         }
     }
 }
 
 #[allow(dead_code)]
 impl ElementCore for Image {
-    fn color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-
-    fn x(&mut self, x: f32) {
-        self.x = x;
-    }
-
-    fn y(&mut self, y: f32) {
-        self.y = y;
-    }
-
-    fn get_x(&self) -> f32 {
-        self.x
-    }
-
-    fn get_y(&self) -> f32 {
-        self.y
-    }
-
-    fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.vertices.clone(),
-            indices: self.indices.clone(),
-        }
-    }
-
     fn build(&mut self) {
         let vertices = vec![
             //Left top corner
             Vertex {
-                in_position: [self.x, self.y],
+                in_position: [self.style.x, self.style.y],
                 in_color: self.color,
                 tex_pos: [0.0, 0.0],
-                texture_id: self.texture_index,
+                texture_id: self.texture,
             },
             //Right top corner
             Vertex {
-                in_position: [self.x + self.width, self.y],
+                in_position: [self.style.x + self.style.width, self.style.y],
                 in_color: self.color,
                 tex_pos: [1.0, 0.0],
-                texture_id: self.texture_index,
+                texture_id: self.texture,
             },
             //Right bottom corner
             Vertex {
-                in_position: [self.x + self.width, self.y + self.height],
+                in_position: [
+                    self.style.x + self.style.width,
+                    self.style.y + self.style.height,
+                ],
                 in_color: self.color,
                 tex_pos: [1.0, 1.0],
-                texture_id: self.texture_index,
+                texture_id: self.texture,
             },
             //Left bottom
             Vertex {
-                in_position: [self.x, self.y + self.height],
+                in_position: [self.style.x, self.style.y + self.style.height],
                 in_color: self.color,
                 tex_pos: [0.0, 1.0],
-                texture_id: self.texture_index,
+                texture_id: self.texture,
             },
         ];
 
@@ -102,12 +80,19 @@ impl ElementCore for Image {
         self.collider = self.get_collider();
     }
 
-    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> {
-        Some(self)
+    fn get_style(&self) -> Style {
+        self.style
     }
 
-    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>> {
-        Rc::new(RefCell::new(self.clone()))
+    fn set_style(&mut self, style: Style) {
+        self.style = style;
+    }
+
+    fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.vertices.clone(),
+            indices: self.indices.clone(),
+        }
     }
 }
 
@@ -118,34 +103,16 @@ impl ElementCollider for Image {
                 scale: 1.0,
                 rot: cgmath::Rotation2::from_angle(cgmath::Rad(0.0)),
                 disp: cgmath::Vector2::new(
-                    self.x + (self.width / 2.0),
-                    self.y + (self.height / 2.0),
+                    self.style.x + (self.style.width / 2.0),
+                    self.style.y + (self.style.height / 2.0),
                 ),
             };
-        primitive::Rectangle::new(self.width, self.height)
+        primitive::Rectangle::new(self.style.width, self.style.height)
             .compute_bound()
             .transform(&transform)
     }
 
     fn contains(&self, point: cgmath::Point2<f32>) -> bool {
         self.collider.contains(&point)
-    }
-}
-
-impl ElememtResizable for Image {
-    fn width(&mut self, width: f32) {
-        self.width = width;
-    }
-
-    fn radius(&mut self, radius: f32) {}
-
-    fn height(&mut self, height: f32) {
-        self.height = height;
-    }
-}
-
-impl ElementImage for Image {
-    fn use_texture(&mut self, index: i32) {
-        self.texture_index = index;
     }
 }

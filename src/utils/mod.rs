@@ -1,12 +1,10 @@
 pub mod batch;
 pub mod font;
-pub mod grid;
-pub mod node;
+pub mod style;
 
 pub use batch::Batch;
-pub use font::{FontPallet};
-pub use grid::{Grid, GridResult};
-pub use node::{NodeWalker, Node};
+pub use font::FontPallet;
+pub use style::Style;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(

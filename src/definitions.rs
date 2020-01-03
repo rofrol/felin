@@ -1,7 +1,6 @@
 use crate::utils::font::FontPallet;
+use crate::utils::Style;
 use collision::Aabb2;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 ///////////////////////////////////////////////////////////////////////////
 // Vertex
@@ -39,17 +38,11 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-
 pub trait ElementCore {
-    fn x(&mut self, x: f32);
-    fn y(&mut self, y: f32);
-    fn get_x(&self) -> f32;
-    fn get_y(&self) -> f32;
-    fn color(&mut self, color: [f32; 4]);
-    fn mesh(&mut self) -> Mesh;
     fn build(&mut self);
-    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable>;
-    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>>;
+    fn get_style(&self) -> Style;
+    fn set_style(&mut self, style: Style);
+    fn mesh(&mut self) -> Mesh;
 }
 
 pub trait ElememtResizable {
@@ -65,8 +58,4 @@ pub trait ElementImageBuild {
 pub trait ElementCollider {
     fn contains(&self, point: cgmath::Point2<f32>) -> bool;
     fn get_collider(&self) -> Aabb2<f32>;
-}
-
-pub trait ElementImage {
-    fn use_texture(&mut self, index: i32);
 }

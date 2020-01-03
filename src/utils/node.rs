@@ -1,63 +1,67 @@
 use super::batch::Batch;
 
 use crate::prelude::*;
-use crate::utils::Grid;
-use std::cell::RefCell;
-use std::rc::Rc;
+
 
 //Single Node
 
 #[derive(Clone)]
-pub struct Node {
+pub struct Node<T: ElementCore> {
     pub parent: Option<String>,
     pub grid: Option<Grid>,
     pub area: Option<String>,
 
-    pub body: Rc<RefCell<dyn ElementCore>>,
+    pub body: T,
     pub id: String,
 }
 
-impl Node {
+impl<T: ElementCore> Node<T> {
     pub fn get_grid(&mut self) -> Grid {
         self.grid.unwrap()
+    }
+
+    pub fn collides(&mut self, point: cgmath::Point2<f32>) -> bool {
+        if let Some(el) = self.body.has_collider() {
+            return el.contains(point);
+        } else {
+            return false;
+        }
     }
 }
 
 //Node tree
-pub struct NodeWalker {
-    tree: Vec<Node>,
+#[derive(Clone)]
+pub struct NodeWalker<T: ElementCore> {
+    pub tree: Vec<Node<dyn ElementCore>>,
 }
 
-impl NodeWalker {
-    pub fn create() -> NodeWalker {
+impl<T: ElementCore> NodeWalker<T> {
+    pub fn create() -> NodeWalker<T> {
         NodeWalker { tree: Vec::new() }
     }
 
-    pub fn add(&mut self, node: Node) {
+    pub fn add(&mut self, node: Node<T>) {
         if node.parent.is_some() {
-            let mut parent = self.find(node.clone().parent.unwrap());
+            let mut node_clone = node.clone();
+            let mut parent = self.find(node.parent.unwrap());
             let result = parent.get_grid().get_position(&node.area.clone().unwrap());
+            node_clone.body.x(parent.body.get_x() + result.x);
 
-            node.body
-                .borrow_mut()
-                .x(parent.body.borrow_mut().get_x() + result.x);
-            node.body
-                .borrow_mut()
-                .y(parent.body.borrow_mut().get_y() + result.y);
+            node_clone.body.y(parent.body.get_y() + result.y);
 
-            if let Some(el) = node.body.borrow_mut().is_resizable() {
+            if let Some(el) = node_clone.body.is_resizable() {
                 el.width(result.width);
                 el.height(result.height);
             }
 
-            node.body.borrow_mut().build();
-            self.tree.push(node.clone());
+            node_clone.body.build();
+            self.tree.push(node_clone);
         } else {
             self.tree.push(node);
         }
     }
 
-    pub fn find(&mut self, id: String) -> Node {
+    pub fn find(&mut self, id: String) -> Node<T> {
         self.tree
             .iter()
             .find(|node| node.id == id)
@@ -68,8 +72,8 @@ impl NodeWalker {
     pub fn get_batch(&mut self) -> Batch {
         let mut batch = Batch::new();
 
-        for node in self.tree.iter() {
-            batch.add_mesh(&node.body.borrow_mut().mesh())
+        for node in self.tree.iter_mut() {
+            batch.add_mesh(&node.body.mesh())
         }
 
         batch

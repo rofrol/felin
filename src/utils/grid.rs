@@ -14,10 +14,12 @@ pub struct GridResult {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Grid {
-    width: f32,
-    height: f32,
-    columns: usize,
-    rows: usize,
+    pub width: f32,
+    pub height: f32,
+    pub x: f32,
+    pub y: f32,
+    pub columns: usize,
+    pub rows: usize,
 }
 
 impl Grid {

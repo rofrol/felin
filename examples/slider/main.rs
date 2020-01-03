@@ -1,11 +1,14 @@
 use felin::prelude::*;
-use felin::{app, pipeline, utils::FontPallet, Base, Event, System};
+use felin::utils::Batch;
+use felin::{app, pipeline, Base, Event, System};
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 mod slider;
 
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
-    slider: slider::Element,
+    buttons: wgpu::BindGroup,
+    images: wgpu::BindGroup,
+    slider: Batch,
 }
 
 impl Base for Main {
@@ -20,10 +23,35 @@ impl Base for Main {
                 .with_resizable(true),
         );
 
-        let pipeline = pipeline::default::Pipeline::new(system);
+        let mut pipeline = pipeline::default::Pipeline::new(system);
+
+        let buttons = pipeline.create_textures_array(
+            system,
+            vec![
+                "examples/slider/assets/arrow_left.png",
+                "examples/slider/assets/arrow_left_active.png",
+                "examples/slider/assets/arrow_right.png",
+                "examples/slider/assets/arrow_right_active.png",
+            ],
+        );
+
+        let images = pipeline.create_textures_array(
+            system,
+            vec![
+                "examples/slider/assets/image1.jpg",
+                "examples/slider/assets/image2.jpg",
+                "examples/slider/assets/image3.jpg",
+            ],
+        );
+
         let slider = slider::Element::new();
 
-        Main { pipeline, slider }
+        Main {
+            pipeline,
+            buttons,
+            images,
+            slider,
+        }
     }
 
     fn update(&mut self, system: &mut System, events: &Event) {
@@ -57,9 +85,9 @@ impl Base for Main {
             self.pipeline.draw(
                 &mut pass,
                 &system,
-                &self.slider.container.indices,
-                &self.slider.container.vertices,
-                None,
+                &self.slider.indices,
+                &self.slider.vertices,
+                Some(&self.buttons),
             );
         }
         system.queue.submit(&[encoder.finish()]);

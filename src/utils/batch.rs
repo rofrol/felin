@@ -1,6 +1,6 @@
 use crate::definitions::{Instance, Mesh, Vertex};
 
-
+#[derive(Clone)]
 pub struct Batch {
     pub indices: Vec<u16>,
     pub vertices: Vec<Vertex>,

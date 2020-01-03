@@ -8,17 +8,13 @@ use lyon::tessellation::FillOptions;
 
 use collision::{prelude::*, primitive, Aabb2};
 
-use crate::prelude::*;
+use crate::utils::Style;
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct Rectangle {
-    pub x: f32,
-    pub y: f32,
-    pub width: f32,
-    pub height: f32,
+    pub style: Style,
     pub color: [f32; 4],
     pub collider: Aabb2<f32>,
     pub buffers: VertexBuffers<Vertex, u16>,
@@ -27,10 +23,7 @@ pub struct Rectangle {
 impl Default for Rectangle {
     fn default() -> Self {
         Self {
-            x: 50.0,
-            y: 50.0,
-            width: 100.0,
-            height: 100.0,
+            style: Style::default(),
             collider: Aabb2 {
                 min: cgmath::Point2::new(0.0, 0.0),
                 max: cgmath::Point2::new(0.0, 0.0),
@@ -41,42 +34,32 @@ impl Default for Rectangle {
     }
 }
 
-#[allow(dead_code)]
-impl ElementCore for Rectangle {
-    fn x(&mut self, x: f32) {
-        self.x = x;
-    }
-
-    fn y(&mut self, y: f32) {
-        self.y = y;
-    }
-
-    fn get_x(&self) -> f32 {
-        self.x
-    }
-
-    fn get_y(&self) -> f32 {
-        self.y
-    }
-
-    fn color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-
-    fn mesh(&mut self) -> Mesh {
+impl Rectangle {
+    pub fn mesh(&mut self) -> Mesh {
         Mesh {
             vertices: self.buffers.vertices.clone(),
             indices: self.buffers.indices.clone(),
         }
     }
+    pub fn color(&mut self, color: [f32; 4]) {
+        self.color = color;
+    }
+}
 
+#[allow(dead_code)]
+impl ElementCore for Rectangle {
     fn build(&mut self) {
         let mut buffers: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
 
         //Draw vertices with Lyon
         fill_rectangle(
-            &rect(self.x, self.y, self.width, self.height),
+            &rect(
+                self.style.x,
+                self.style.y,
+                self.style.width,
+                self.style.height,
+            ),
             &fill_options,
             &mut BuffersBuilder::new(&mut buffers, |vertex: tessellation::FillVertex| Vertex {
                 in_position: vertex.position.to_array(),
@@ -91,23 +74,31 @@ impl ElementCore for Rectangle {
         self.collider = self.get_collider();
     }
 
-    fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> { Some(self) }
+    fn get_style(&self) -> Style {
+        self.style
+    }
+    fn set_style(&mut self, style: Style) {
+        self.style = style;
+    }
 
-    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>> {
-        Rc::new(RefCell::new(self.clone()))
+    fn mesh(&mut self) -> Mesh {
+        Mesh {
+            vertices: self.buffers.vertices.clone(),
+            indices: self.buffers.indices.clone(),
+        }
     }
 }
 
 impl ElememtResizable for Rectangle {
     fn width(&mut self, width: f32) {
-        self.width = width;
+        self.style.width = width;
     }
 
     fn height(&mut self, height: f32) {
-        self.height = height;
+        self.style.height = height;
     }
 
-    fn radius(&mut self, radius: f32) {}
+    fn radius(&mut self, _radius: f32) {}
 }
 
 impl ElementCollider for Rectangle {
@@ -121,11 +112,11 @@ impl ElementCollider for Rectangle {
                 scale: 1.0,
                 rot: cgmath::Rotation2::from_angle(cgmath::Rad(0.0)),
                 disp: cgmath::Vector2::new(
-                    self.x + (self.width / 2.0),
-                    self.y + (self.height / 2.0),
+                    self.style.x + (self.style.width / 2.0),
+                    self.style.y + (self.style.height / 2.0),
                 ),
             };
-        primitive::Rectangle::new(self.width, self.height)
+        primitive::Rectangle::new(self.style.width, self.style.height)
             .compute_bound()
             .transform(&transform)
     }

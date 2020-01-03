@@ -1,76 +1,50 @@
-use felin::mesh::{Image, Rectangle};
+use felin::mesh::{Grid, Image, Rectangle};
 use felin::prelude::*;
-use felin::utils::{Batch, Grid, Node, NodeWalker};
+use felin::utils::Batch;
+use felin::utils::Style;
+use felin::Event;
 
 #[allow(dead_code)]
-pub struct Element {
-    nodes: NodeWalker,
-    pub container: Batch,
-}
+pub struct Element {}
 
 impl Element {
-    pub fn new() -> Self {
-        let mut tree = NodeWalker::create();
-        let mut container_rect = Rectangle {
-            x: (800) as f32,
-            y: 200.0,
-            color: [0.52, 0.73, 0.94, 1.0],
-            width: 800.0,
-            height: 800.0,
+    pub fn new() -> Batch {
+        Grid {
+            style: Style {
+                width: 600.0,
+                height: 600.0,
+                x: 200.0,
+                y: 200.0,
+                rows: 12,
+                columns: 12,
+                ..Style::default()
+            },
+            children: vec![
+                &mut Rectangle {
+                    style: Style {
+                        row_start: 1,
+                        row_end: 12,
+                        column_start: 1,
+                        column_end: 5,
+                        ..Style::default()
+                    },
+                    color: [1.0, 1.0, 1.0, 1.0],
+                    ..Default::default()
+                },
+                &mut Rectangle {
+                    style: Style {
+                        row_start: 1,
+                        row_end: 12,
+                        column_start: 6,
+                        column_end: 12,
+                        ..Style::default()
+                    },
+                    color: [1.0, 1.0, 1.0, 1.0],
+                    ..Default::default()
+                },
+            ],
             ..Default::default()
-        };
-
-        tree.add(Node {
-            grid: Some(Grid::new(
-                container_rect.width,
-                container_rect.height,
-                "12/12",
-            )),
-            body: container_rect.as_rc(),
-            parent: None,
-            area: None,
-            id: "container".to_string(),
-        });
-
-        tree.add(Node {
-            grid: None,
-            body: Rectangle {
-                color: [0.52, 0.73, 0.94, 1.0],
-                ..Default::default()
-            }
-            .as_rc(),
-            parent: Some("container".to_string()),
-            area: Some("0/1/5/6".to_string()),
-            id: "button_left".to_string(),
-        });
-
-        tree.add(Node {
-            grid: None,
-            body: Rectangle {
-                color: [0.52, 0.73, 0.94, 1.0],
-                ..Default::default()
-            }
-            .as_rc(),
-            parent: Some("container".to_string()),
-            area: Some("11/12/5/6".to_string()),
-            id: "button_right".to_string(),
-        });
-
-        tree.add(Node {
-            grid: None,
-            body: Rectangle {
-                color: [1.0, 1.0, 1.0, 1.0],
-                ..Default::default()
-            }
-            .as_rc(),
-            parent: Some("container".to_string()),
-            area: Some("1/11/1/12".to_string()),
-            id: "gallery".to_string(),
-        });
-
-        Self {
-            container: tree.get_batch(),
-            nodes: tree,
         }
+        .into_batch()
     }
 }

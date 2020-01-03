@@ -1,6 +1,10 @@
 use felin::mesh::Text;
 use felin::prelude::*;
-use felin::{app, pipeline, utils::FontPallet, Base, Event, System};
+use felin::{
+    app, pipeline,
+    utils::{FontPallet, Style},
+    Base, Event, System,
+};
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 pub struct Main {
@@ -22,21 +26,18 @@ impl Base for Main {
         );
 
         let font: FontPallet =
-            FontPallet::new(32, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+            FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
 
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);
 
         let mut text_container = Text {
-            width: 530.0,
-            height: 500.0,
+            style: Style::default(),
             text: "Tere olen tonis !".to_string(),
-            x: 350.0,
-            y: 350.0,
             ..Default::default()
         };
 
-        text_container.build();
+        text_container.build_text(&font);
 
         Main {
             text_pipeline,
