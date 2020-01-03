@@ -1,8 +1,8 @@
-use crate::mesh::{Circle, Image, Rectangle, Text};
 use crate::utils::font::FontPallet;
-use crate::utils::grid::Grid;
 use collision::Aabb2;
+use std::cell::RefCell;
 use std::rc::Rc;
+
 ///////////////////////////////////////////////////////////////////////////
 // Vertex
 ///////////////////////////////////////////////////////////////////////////
@@ -39,17 +39,6 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-//Single Node
-
-#[derive(Clone)]
-pub struct Node {
-    pub parent: Option<froggy::Pointer<Node>>,
-    pub grid: Option<Grid>,
-    pub area: Option<String>,
-
-    pub body: Rc<dyn ElementCore>,
-    pub id: String,
-}
 
 pub trait ElementCore {
     fn x(&mut self, x: f32);
@@ -60,6 +49,7 @@ pub trait ElementCore {
     fn mesh(&mut self) -> Mesh;
     fn build(&mut self);
     fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable>;
+    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>>;
 }
 
 pub trait ElememtResizable {

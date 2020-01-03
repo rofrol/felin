@@ -3,6 +3,9 @@ use crate::prelude::*;
 use crate::utils::font::{FontBitmap, FontPallet, UvPosition};
 use crate::utils::Batch;
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 #[allow(dead_code)]
 #[derive(Clone)]
 pub struct Text {
@@ -90,6 +93,10 @@ impl ElementCore for Text {
     }
 
     fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> { None }
+
+    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>> {
+        Rc::new(RefCell::new(self.clone()))
+    }
 }
 
 impl Text {

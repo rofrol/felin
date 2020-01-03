@@ -9,6 +9,9 @@ use lyon::tessellation::FillOptions;
 use cgmath::{self, prelude::*};
 use collision::{prelude::*, primitive, Aabb2};
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::prelude::*;
 
 #[allow(dead_code)]
@@ -74,6 +77,10 @@ impl ElementCore for Circle {
 
     fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> {
         Some(self)
+    }
+
+    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>> {
+        Rc::new(RefCell::new(self.clone()))
     }
 }
 

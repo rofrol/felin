@@ -10,6 +10,9 @@ use collision::{prelude::*, primitive, Aabb2};
 
 use crate::prelude::*;
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 #[derive(Clone)]
 pub struct Rectangle {
     pub x: f32,
@@ -89,6 +92,10 @@ impl ElementCore for Rectangle {
     }
 
     fn is_resizable(&mut self) -> Option<&mut dyn ElememtResizable> { Some(self) }
+
+    fn as_rc(&mut self) -> Rc<RefCell<dyn ElementCore>> {
+        Rc::new(RefCell::new(self.clone()))
+    }
 }
 
 impl ElememtResizable for Rectangle {
