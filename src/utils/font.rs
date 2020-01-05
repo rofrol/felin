@@ -5,11 +5,12 @@ use std::io::Read;
 use std::sync::Mutex;
 
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
-static mut FONT: Vec<u8> = Vec::new();
 
 lazy_static! {
     static ref FONT_CACHE: Mutex<HashMap<String, FontPallet>> = { Mutex::new(HashMap::new()) };
 }
+
+static mut FONT: Vec<u8> = Vec::new();
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
@@ -42,7 +43,7 @@ impl FontBitmap {
 
         let x_start_position = ceil(((self.x - padding) / self.max_width) as f64, 3) as f32;
         let x_end_position = ceil(
-            ((self.x + self.width + padding) as f32 / self.max_width) as f64,
+            ((self.x + self.width + padding) as f32 / self.max_height) as f64,
             3,
         ) as f32;
 
@@ -69,7 +70,7 @@ pub struct FontPallet {
 
 impl FontPallet {
     /// parse a truetype file from bytes
-    pub fn create_font(size: i32, font_name: &str) -> FontPallet {
+    pub fn create_font(font_name: &str, size: i32) -> FontPallet {
         let font = FontPallet::cache(ASCII_CHARS, size);
 
         let mut map = FONT_CACHE.lock().expect("lock failed");
@@ -77,15 +78,13 @@ impl FontPallet {
         font
     }
 
-    /// Caches ASCII_CHARS into font data for each character.
+    /// manually cache characters
     pub fn cache(s: &str, size: i32) -> Self {
-        let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
-
         let (max_texture_w, max_texture_h) = (size * size as i32, size * size as i32);
-        let (max_height, max_width) = FontPallet::character_offsets(size, s);
-
-        let mut characters: HashMap<char, FontBitmap> = HashMap::new();
+        let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
         let mut cur_pt: cgmath::Point2<i32> = cgmath::Point2::new(0, 0);
+        let (max_height, max_width) = FontPallet::character_offsets(size, s);
+        let mut characters: HashMap<char, FontBitmap> = HashMap::new();
 
         for ch in s.chars() {
             let (metrics, bitmap) = font.rasterize(ch, size as f32);
@@ -101,7 +100,7 @@ impl FontPallet {
                 offset_y = max_height - metrics.height as i32;
             }
 
-            //Add space char a bigger width than 0
+            //Add space char width
             if ch == ' ' {
                 w = size / 3
             }
@@ -112,7 +111,7 @@ impl FontPallet {
                 y += h + size as i32;
             }
 
-            if y >= max_texture_h {
+            if y >= max_texture_w {
                 println!("Error, font texture too high");
             }
 
@@ -139,9 +138,9 @@ impl FontPallet {
         }
 
         FontPallet {
-            characters: characters,
-            max_h: max_height,
-            max_w: max_width,
+            characters,
+            max_h: max_texture_h,
+            max_w: max_texture_w,
         }
     }
 
@@ -149,6 +148,7 @@ impl FontPallet {
     pub fn character_offsets(size: i32, s: &str) -> (i32, i32) {
         let (mut max_height, mut max_width) = (0, 0);
         let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
+
         s.chars().into_iter().for_each(|ch| {
             let (metrics, _bitmap) = font.rasterize(ch, size as f32);
             if metrics.height > max_height {

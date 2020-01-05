@@ -24,7 +24,7 @@ impl Default for Text {
     fn default() -> Self {
         Self {
             style: Style::default(),
-            font: "Roboto".to_string(),
+            font: "".to_string(),
             last_char_position: cgmath::Vector2::new(0.0, 0.0),
             row_height: 10.0,
             color: [1.0, 1.0, 1.0, 1.0],
@@ -60,6 +60,7 @@ impl ElementCore for Text {
         self.vertices = batch.vertices;
         self.indices = batch.indices;
     }
+
     fn get_style(&self) -> Style {
         self.style
     }

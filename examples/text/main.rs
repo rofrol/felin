@@ -27,17 +27,19 @@ impl Base for Main {
 
         FontPallet::load_font("examples/text/assets/Roboto.ttf");
 
-        let font: FontPallet = FontPallet::create_font(24, "Roboto");
+        let font: FontPallet = FontPallet::create_font("Roboto", 32);
+
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);
 
         let mut text_container = Text {
             style: Style::default(),
+            font: "Roboto".to_string(),
             text: "Tere olen tonis !".to_string(),
             ..Default::default()
         };
 
-        // text_container.build();
+        text_container.build();
 
         Main {
             text_pipeline,
@@ -74,13 +76,13 @@ impl Base for Main {
                 depth_stencil_attachment: None,
             });
 
-            // self.text_pipeline.draw(
-            //     &mut pass,
-            //     system,
-            //     &self.text_container.mesh().indices,
-            //     &self.text_container.mesh().vertices,
-            //     &self.font_texture,
-            // );
+            self.text_pipeline.draw(
+                &mut pass,
+                system,
+                &self.text_container.mesh().indices,
+                &self.text_container.mesh().vertices,
+                &self.font_texture,
+            );
         }
         system.queue.submit(&[encoder.finish()]);
     }
