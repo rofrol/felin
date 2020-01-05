@@ -1,5 +1,9 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
+
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
+static mut FONT: Vec<u8> = Vec::new();
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
@@ -51,7 +55,6 @@ impl FontBitmap {
 
 /// truetype font
 pub struct FontPallet {
-    font_data: &'static [u8],
     size: i32,
     pub max_w: i32,
     pub max_h: i32,
@@ -61,11 +64,10 @@ pub struct FontPallet {
 
 impl FontPallet {
     /// parse a truetype file from bytes
-    pub fn new(size: i32, font_data: &'static [u8]) -> Self {
+    pub fn new(size: i32) -> Self {
         let (max_w, max_h) = (size * size as i32, size * size as i32);
 
         Self {
-            font_data: &font_data,
             size: size,
             characters: HashMap::new(),
             cur_pt: cgmath::Point2::new(0, 0),
@@ -76,7 +78,7 @@ impl FontPallet {
 
     /// manually cache characters
     pub fn cache(&mut self, s: &str) -> Self {
-        let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
+        let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
 
         let (max_height, max_width) = self.character_offsets(s);
 
@@ -135,7 +137,6 @@ impl FontPallet {
 
         FontPallet {
             size: self.size,
-            font_data: self.font_data,
             characters: self.characters.clone(),
             cur_pt: self.cur_pt,
             max_h: self.max_h,
@@ -146,7 +147,7 @@ impl FontPallet {
     //Get character offsets for correct alignment
     pub fn character_offsets(&mut self, s: &str) -> (i32, i32) {
         let (mut max_height, mut max_width) = (0, 0);
-        let mut font = fontdue::Font::from_bytes(self.font_data).unwrap();
+        let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
         s.chars().into_iter().for_each(|ch| {
             let (metrics, _bitmap) = font.rasterize(ch, self.size as f32);
             if metrics.height > max_height {
@@ -167,4 +168,16 @@ impl FontPallet {
     pub fn get(&self, ch: char) -> &FontBitmap {
         return self.characters.get(&ch).unwrap();
     }
+
+
+    pub fn load_font(path: &str) {
+        let mut f = File::open(path).expect("failed to read font");
+        let mut buffer = Vec::new();
+        f.read_to_end(&mut buffer).expect("failed to read file");
+        unsafe {
+            FONT = buffer;
+        }
+    }
 }
+
+

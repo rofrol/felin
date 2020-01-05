@@ -2,7 +2,7 @@ use felin::mesh::Text;
 use felin::prelude::*;
 use felin::{
     app, pipeline,
-    utils::{FontPallet, Style},
+    utils::{font::FontPallet, Style},
     Base, Event, System,
 };
 use winit::{dpi::LogicalSize, window::WindowBuilder};
@@ -25,8 +25,9 @@ impl Base for Main {
                 .with_resizable(true),
         );
 
-        let font: FontPallet =
-            FontPallet::new(24, include_bytes!("./assets/Roboto.ttf")).cache_asciis();
+        FontPallet::load_font("examples/text/assets/Roboto.ttf");
+
+        let font: FontPallet = FontPallet::new(24).cache_asciis();
 
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);
