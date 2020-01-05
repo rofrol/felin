@@ -27,10 +27,9 @@ impl Base for Main {
 
         FontPallet::load_font("examples/text/assets/Roboto.ttf");
 
-        let font: FontPallet = FontPallet::create_font("Roboto", 32);
-
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
-        let font_texture = text_pipeline.create_font_texture(system, &font);
+        let font_texture =
+            text_pipeline.create_font_texture(system, &FontPallet::create_font("Roboto", 32));
 
         let mut text_container = Text {
             style: Style::default(),
