@@ -11,5 +11,6 @@ To check the examples, clone the project and run command
 
 ```
 cargo run --example slider
+cargo run --example text
 
 ```
