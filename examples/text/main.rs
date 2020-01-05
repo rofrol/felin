@@ -27,8 +27,7 @@ impl Base for Main {
 
         FontPallet::load_font("examples/text/assets/Roboto.ttf");
 
-        let font: FontPallet = FontPallet::new(24).cache_asciis();
-
+        let font: FontPallet = FontPallet::create_font(24, "Roboto");
         let mut text_pipeline = pipeline::text::Pipeline::new(system);
         let font_texture = text_pipeline.create_font_texture(system, &font);
 
@@ -38,7 +37,7 @@ impl Base for Main {
             ..Default::default()
         };
 
-        text_container.build_text(&font);
+        // text_container.build();
 
         Main {
             text_pipeline,
@@ -75,13 +74,13 @@ impl Base for Main {
                 depth_stencil_attachment: None,
             });
 
-            self.text_pipeline.draw(
-                &mut pass,
-                system,
-                &self.text_container.mesh().indices,
-                &self.text_container.mesh().vertices,
-                &self.font_texture,
-            );
+            // self.text_pipeline.draw(
+            //     &mut pass,
+            //     system,
+            //     &self.text_container.mesh().indices,
+            //     &self.text_container.mesh().vertices,
+            //     &self.font_texture,
+            // );
         }
         system.queue.submit(&[encoder.finish()]);
     }

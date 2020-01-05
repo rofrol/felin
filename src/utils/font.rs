@@ -1,9 +1,15 @@
+use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
+use std::sync::Mutex;
 
 const ASCII_CHARS: &str = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"##;
 static mut FONT: Vec<u8> = Vec::new();
+
+lazy_static! {
+    static ref FONT_CACHE: Mutex<HashMap<String, FontPallet>> = { Mutex::new(HashMap::new()) };
+}
 
 #[derive(Clone, Debug)]
 pub struct FontBitmap {
@@ -54,102 +60,97 @@ impl FontBitmap {
 }
 
 /// truetype font
+#[derive(Debug, Clone)]
 pub struct FontPallet {
-    size: i32,
     pub max_w: i32,
     pub max_h: i32,
-    cur_pt: cgmath::Point2<i32>,
     pub characters: HashMap<char, FontBitmap>,
 }
 
 impl FontPallet {
     /// parse a truetype file from bytes
-    pub fn new(size: i32) -> Self {
-        let (max_w, max_h) = (size * size as i32, size * size as i32);
+    pub fn create_font(size: i32, font_name: &str) -> FontPallet {
+        let font = FontPallet::cache(ASCII_CHARS, size);
 
-        Self {
-            size: size,
-            characters: HashMap::new(),
-            cur_pt: cgmath::Point2::new(0, 0),
-            max_h,
-            max_w,
-        }
+        let mut map = FONT_CACHE.lock().expect("lock failed");
+        map.insert(font_name.to_string(), font.clone());
+        font
     }
 
-    /// manually cache characters
-    pub fn cache(&mut self, s: &str) -> Self {
+    /// Caches ASCII_CHARS into font data for each character.
+    pub fn cache(s: &str, size: i32) -> Self {
         let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
 
-        let (max_height, max_width) = self.character_offsets(s);
+        let (max_texture_w, max_texture_h) = (size * size as i32, size * size as i32);
+        let (max_height, max_width) = FontPallet::character_offsets(size, s);
+
+        let mut characters: HashMap<char, FontBitmap> = HashMap::new();
+        let mut cur_pt: cgmath::Point2<i32> = cgmath::Point2::new(0, 0);
 
         for ch in s.chars() {
-            if !self.characters.contains_key(&ch) {
-                let (metrics, bitmap) = font.rasterize(ch, self.size as f32);
-                let (mut w, h) = (metrics.width as i32, metrics.height as i32);
-                let (mut x, mut y) = self.cur_pt.into();
-                let (mut offset_x, mut offset_y) = (0, 0);
+            let (metrics, bitmap) = font.rasterize(ch, size as f32);
+            let (mut w, h) = (metrics.width as i32, metrics.height as i32);
+            let (mut x, mut y) = cur_pt.into();
+            let (mut offset_x, mut offset_y) = (0, 0);
 
-                //Add offsets to smaller characters
-                if metrics.width < max_width as usize {
-                    offset_x = max_width - metrics.width as i32;
-                }
-                if metrics.height < max_height as usize {
-                    offset_y = max_height - metrics.height as i32;
-                }
-
-                //Add space char width
-                if ch == ' ' {
-                    w = self.size / 3
-                }
-
-                //Put texture to new row on atlas, because current row is full
-                if x + w >= self.max_w {
-                    x = 0;
-                    y += h + self.size as i32;
-                }
-
-                if y >= self.max_h {
-                    println!("Error, font texture too high");
-                }
-
-                //Add new character to bitmap
-                self.characters.insert(
-                    ch,
-                    FontBitmap {
-                        data: bitmap,
-                        y: y as f32,
-                        x: x as f32,
-                        width: w as f32,
-                        height: h as f32,
-                        offset_x: offset_x as f32,
-                        offset_y: offset_y as f32,
-                        font_size: self.size as f32,
-                        max_width: self.max_w as f32,
-                        max_height: self.max_h as f32,
-                    },
-                );
-
-                //Move character forward on texture atlas
-                x += w + self.size as i32;
-                self.cur_pt = cgmath::Point2::new(x, y);
+            //Add offsets to smaller characters
+            if metrics.width < max_width as usize {
+                offset_x = max_width - metrics.width as i32;
             }
+            if metrics.height < max_height as usize {
+                offset_y = max_height - metrics.height as i32;
+            }
+
+            //Add space char a bigger width than 0
+            if ch == ' ' {
+                w = size / 3
+            }
+
+            //Put texture to new row on atlas, because current row is full
+            if x + w >= max_texture_w {
+                x = 0;
+                y += h + size as i32;
+            }
+
+            if y >= max_texture_h {
+                println!("Error, font texture too high");
+            }
+
+            //Add new character to bitmap
+            characters.insert(
+                ch,
+                FontBitmap {
+                    data: bitmap,
+                    y: y as f32,
+                    x: x as f32,
+                    width: w as f32,
+                    height: h as f32,
+                    offset_x: offset_x as f32,
+                    offset_y: offset_y as f32,
+                    font_size: size as f32,
+                    max_width: max_texture_w as f32,
+                    max_height: max_texture_h as f32,
+                },
+            );
+
+            //Move character forward on texture atlas
+            x += w + size as i32;
+            cur_pt = cgmath::Point2::new(x, y);
         }
 
         FontPallet {
-            size: self.size,
-            characters: self.characters.clone(),
-            cur_pt: self.cur_pt,
-            max_h: self.max_h,
-            max_w: self.max_w,
+            characters: characters,
+            max_h: max_height,
+            max_w: max_width,
         }
     }
 
     //Get character offsets for correct alignment
-    pub fn character_offsets(&mut self, s: &str) -> (i32, i32) {
+    pub fn character_offsets(size: i32, s: &str) -> (i32, i32) {
         let (mut max_height, mut max_width) = (0, 0);
         let mut font = unsafe { fontdue::Font::from_bytes(&FONT[..]).unwrap() };
         s.chars().into_iter().for_each(|ch| {
-            let (metrics, _bitmap) = font.rasterize(ch, self.size as f32);
+            let (metrics, _bitmap) = font.rasterize(ch, size as f32);
             if metrics.height > max_height {
                 max_height = metrics.height;
             }
@@ -160,15 +161,9 @@ impl FontPallet {
         return (max_height as i32, max_width as i32);
     }
 
-    /// cache all ascii chars
-    pub fn cache_asciis(&mut self) -> Self {
-        return self.cache(ASCII_CHARS);
-    }
-
     pub fn get(&self, ch: char) -> &FontBitmap {
         return self.characters.get(&ch).unwrap();
     }
-
 
     pub fn load_font(path: &str) {
         let mut f = File::open(path).expect("failed to read font");
@@ -178,6 +173,10 @@ impl FontPallet {
             FONT = buffer;
         }
     }
+
+    pub fn get_font(name: &str) -> FontPallet {
+        let map = FONT_CACHE.lock().expect("lock failed");
+        let font = map.get(name).expect("Failed to find font");
+        font.clone()
+    }
 }
-
-

@@ -8,7 +8,7 @@ use crate::utils::Style;
 #[derive(Clone)]
 pub struct Text {
     pub style: Style,
-
+    pub font: String,
     pub text: String,
     pub row_height: f32,
     pub last_char_position: cgmath::Vector2<f32>,
@@ -24,6 +24,7 @@ impl Default for Text {
     fn default() -> Self {
         Self {
             style: Style::default(),
+            font: "Roboto".to_string(),
             last_char_position: cgmath::Vector2::new(0.0, 0.0),
             row_height: 10.0,
             color: [1.0, 1.0, 1.0, 1.0],
@@ -38,7 +39,27 @@ impl Default for Text {
 
 #[allow(dead_code)]
 impl ElementCore for Text {
-    fn build(&mut self) {}
+    fn build(&mut self) {
+        let font = FontPallet::get_font(&self.font);
+        let mut batch = Batch::new();
+        self.last_char_position = cgmath::Vector2::new(self.style.x, self.style.y);
+        for key in self.text.clone().chars() {
+            let character = font.get(key);
+            let uv_positions = character.get_uv_position();
+
+            //Push letter to new row
+            if (self.last_char_position.x - self.style.x) > self.style.width {
+                self.last_char_position =
+                    cgmath::Vector2::new(self.style.x, self.last_char_position.y + 40.0);
+            }
+
+            let letter = self.create_letter(uv_positions, character);
+            batch.add_mesh(&letter);
+        }
+
+        self.vertices = batch.vertices;
+        self.indices = batch.indices;
+    }
     fn get_style(&self) -> Style {
         self.style
     }
@@ -119,28 +140,6 @@ impl Text {
             };
 
         Mesh { vertices, indices }
-    }
-
-    pub fn build_text(&mut self, font: &FontPallet) {
-        let mut batch = Batch::new();
-        self.last_char_position = cgmath::Vector2::new(self.style.x, self.style.y);
-
-        for key in self.text.clone().chars() {
-            let character = font.get(key);
-            let uv_positions = character.get_uv_position();
-
-            //Push letter to new row
-            if (self.last_char_position.x - self.style.x) > self.style.width {
-                self.last_char_position =
-                    cgmath::Vector2::new(self.style.x, self.last_char_position.y + 40.0);
-            }
-
-            let letter = self.create_letter(uv_positions, character);
-            batch.add_mesh(&letter);
-        }
-
-        self.vertices = batch.vertices;
-        self.indices = batch.indices;
     }
 
     pub fn text(&mut self, text: &str) -> &mut Self {
