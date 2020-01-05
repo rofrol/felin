@@ -21,11 +21,6 @@ pub struct Circle {
     pub buffers: VertexBuffers<Vertex, u16>,
 }
 
-impl Circle {
-    fn color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-}
 
 #[allow(dead_code)]
 impl ElementCore for Circle {

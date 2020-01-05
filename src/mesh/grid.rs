@@ -1,7 +1,7 @@
-use crate::definitions::{Mesh, Vertex};
+use crate::definitions::{Mesh};
 use crate::prelude::*;
 use crate::utils::{Batch, Style};
-use collision::{prelude::*, primitive, Aabb2};
+
 
 pub struct Grid<'a> {
     pub style: Style,
@@ -18,7 +18,7 @@ impl<'a> Default for Grid<'a> {
 }
 
 impl<'a> Grid<'a> {
-    fn calculate_style(&mut self) {}
+    fn _calculate_style(&mut self) {}
 
     pub fn build(&mut self) {
         for child in self.children.iter_mut() {
