@@ -66,7 +66,7 @@ impl Style {
         width_column = if width_column > 0 { width_column } else { 1 };
 
         let width = width_column * single_column;
-        let height = height_column * single_row + height_column / 2;
+        let height = height_column * single_row + height_column;
 
         Style {
             x: (single_column * child.column_start) as f32,
