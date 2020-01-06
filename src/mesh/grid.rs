@@ -25,8 +25,10 @@ impl<'a> Grid<'a> {
     ) {
         for child in children.iter_mut() {
             let style = Style::calculate_style(parent_style, child.get_style());
+
             child.set_style(style);
             child.build();
+
             match child.get_id() {
                 // The division was valid
                 Some(id) => {
