@@ -1,5 +1,3 @@
-use felin::prelude::*;
-use felin::utils::Batch;
 use felin::{app, pipeline, Base, Event, System};
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 mod slider;
@@ -45,7 +43,6 @@ impl Base for Main {
         );
 
         let slider = slider::Element::new();
-
         Main {
             pipeline,
             buttons,
@@ -85,9 +82,17 @@ impl Base for Main {
             self.pipeline.draw(
                 &mut pass,
                 &system,
-                &self.slider.elements.indices,
-                &self.slider.elements.vertices,
+                &self.slider.container.indices,
+                &self.slider.container.vertices,
                 Some(&self.buttons),
+            );
+
+            self.pipeline.draw(
+                &mut pass,
+                &system,
+                &self.slider.images.indices,
+                &self.slider.images.vertices,
+                Some(&self.images),
             );
         }
         system.queue.submit(&[encoder.finish()]);

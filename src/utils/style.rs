@@ -27,22 +27,22 @@ pub struct Style {
 impl Default for Style {
     fn default() -> Self {
         Self {
-            width: 100.0,
-            height: 100.0,
-            x: 100.0,
-            y: 100.0,
-            radius: 100.0,
+            width: 0.0,
+            height: 0.0,
+            x: 0.0,
+            y: 0.0,
+            radius: 0.0,
 
             direction: Direction::Horizontal,
             row_gap: 0.0,
             column_gap: 0.0,
 
-            columns: 1,
-            rows: 1,
-            row_start: 1,
-            row_end: 1,
-            column_start: 1,
-            column_end: 1,
+            columns: 0,
+            rows: 0,
+            row_start: 0,
+            row_end: 0,
+            column_start: 0,
+            column_end: 0,
         }
     }
 }
@@ -65,12 +65,11 @@ impl Style {
         height_column = if height_column > 0 { height_column } else { 1 };
         width_column = if width_column > 0 { width_column } else { 1 };
 
-        let width = width_column * single_column;
+        let width = width_column * single_column + width_column;
         let height = height_column * single_row + height_column;
-
         Style {
-            x: (single_column * child.column_start) as f32,
-            y: (single_row * child.row_start) as f32,
+            x: (single_column * child.column_start) as f32 + parent.x,
+            y: (single_row * child.row_start) as f32 + parent.y,
             width: width as f32,
             height: height as f32,
             ..child
