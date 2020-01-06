@@ -1,7 +1,6 @@
-use crate::definitions::{Mesh};
+use crate::definitions::Mesh;
 use crate::prelude::*;
 use crate::utils::{Batch, Style};
-
 
 pub struct Grid<'a> {
     pub style: Style,
@@ -18,25 +17,23 @@ impl<'a> Default for Grid<'a> {
 }
 
 impl<'a> Grid<'a> {
-    fn _calculate_style(&mut self) {}
-
-    pub fn build(&mut self) {
-        for child in self.children.iter_mut() {
-            let style = Style::calculate_style(self.style, child.get_style());
+    fn calculate_style(
+        parent_style: Style,
+        children: &mut Vec<&'a mut dyn ElementCore>,
+        batch: &mut Batch,
+    ) {
+        for child in children.iter_mut() {
+            let style = Style::calculate_style(parent_style, child.get_style());
             child.set_style(style);
+            child.build();
+
+            batch.add_mesh(&child.mesh());
         }
     }
 
     pub fn into_batch(&mut self) -> Batch {
-        self.build();
-
         let mut batch = Batch::new();
-
-        for child in self.children.iter_mut() {
-            child.build();
-            batch.add_mesh(&child.mesh());
-        }
-
+        Self::calculate_style(self.style.clone(), &mut self.children, &mut batch);
         batch
     }
 }
