@@ -5,11 +5,13 @@ use felin::utils::Style;
 use felin::Event;
 
 #[allow(dead_code)]
-pub struct Element {}
+pub struct Element {
+    pub elements: Batch,
+}
 
 impl Element {
-    pub fn new() -> Batch {
-        Grid {
+    pub fn new() -> Self {
+        let element = Grid {
             style: Style {
                 width: 600.0,
                 height: 600.0,
@@ -45,6 +47,10 @@ impl Element {
             ],
             ..Default::default()
         }
-        .into_batch()
+        .into_batches(None);
+
+        Element {
+            elements: element.get("default").unwrap().clone(),
+        }
     }
 }

@@ -41,6 +41,7 @@ pub struct Instance {
 pub trait ElementCore {
     fn build(&mut self);
     fn get_style(&self) -> Style;
+    fn get_id(&self) -> Option<String>;
     fn set_style(&mut self, style: Style);
     fn mesh(&mut self) -> Mesh;
 }
@@ -59,5 +60,3 @@ pub trait ElementCollider {
     fn contains(&self, point: cgmath::Point2<f32>) -> bool;
     fn get_collider(&self) -> Aabb2<f32>;
 }
-
-

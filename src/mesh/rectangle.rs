@@ -18,6 +18,7 @@ pub struct Rectangle {
     pub color: [f32; 4],
     pub collider: Aabb2<f32>,
     pub buffers: VertexBuffers<Vertex, u16>,
+    pub id: Option<String>,
 }
 
 impl Default for Rectangle {
@@ -30,6 +31,7 @@ impl Default for Rectangle {
             },
             buffers: VertexBuffers::new(),
             color: [1.0, 1.0, 1.0, 1.0],
+            id: None,
         }
     }
 }
@@ -86,6 +88,10 @@ impl ElementCore for Rectangle {
             vertices: self.buffers.vertices.clone(),
             indices: self.buffers.indices.clone(),
         }
+    }
+
+    fn get_id(&self) -> Option<String> {
+        self.id.clone()
     }
 }
 

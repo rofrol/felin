@@ -11,6 +11,7 @@ pub struct Image {
     pub indices: Vec<u16>,
     pub color: [f32; 4],
     pub texture: i32,
+    pub id: Option<String>,
 }
 
 impl Default for Image {
@@ -25,6 +26,7 @@ impl Default for Image {
             vertices: Vec::new(),
             indices: Vec::new(),
             texture: 0,
+            id: None,
         }
     }
 }
@@ -86,6 +88,10 @@ impl ElementCore for Image {
 
     fn set_style(&mut self, style: Style) {
         self.style = style;
+    }
+
+    fn get_id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn mesh(&mut self) -> Mesh {

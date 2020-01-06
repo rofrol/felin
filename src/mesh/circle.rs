@@ -20,6 +20,22 @@ pub struct Circle {
     pub collider: Aabb2<f32>,
     pub color: [f32; 4],
     pub buffers: VertexBuffers<Vertex, u16>,
+    pub id: Option<String>
+}
+
+impl Default for Circle {
+    fn default() -> Self {
+        Self {
+            style: Style::default(),
+            collider: Aabb2 {
+                min: cgmath::Point2::new(0.0, 0.0),
+                max: cgmath::Point2::new(0.0, 0.0),
+            },
+            color: [1.0, 1.0, 1.0, 1.0],
+            buffers: VertexBuffers::new(),
+            id: None,
+        }
+    }
 }
 
 
@@ -54,6 +70,10 @@ impl ElementCore for Circle {
         self.style = style;
     }
 
+    fn get_id(&self) -> Option<String> {
+        self.id.clone()
+    }
+
     fn mesh(&mut self) -> Mesh {
         Mesh {
             vertices: self.buffers.vertices.clone(),
@@ -81,16 +101,4 @@ impl ElementCollider for Circle {
     }
 }
 
-impl Default for Circle {
-    fn default() -> Self {
-        Self {
-            style: Style::default(),
-            collider: Aabb2 {
-                min: cgmath::Point2::new(0.0, 0.0),
-                max: cgmath::Point2::new(0.0, 0.0),
-            },
-            color: [1.0, 1.0, 1.0, 1.0],
-            buffers: VertexBuffers::new(),
-        }
-    }
-}
+

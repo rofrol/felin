@@ -8,7 +8,7 @@ pub struct Main {
     pipeline: pipeline::default::Pipeline,
     buttons: wgpu::BindGroup,
     images: wgpu::BindGroup,
-    slider: Batch,
+    slider: slider::Element,
 }
 
 impl Base for Main {
@@ -85,8 +85,8 @@ impl Base for Main {
             self.pipeline.draw(
                 &mut pass,
                 &system,
-                &self.slider.indices,
-                &self.slider.vertices,
+                &self.slider.elements.indices,
+                &self.slider.elements.vertices,
                 Some(&self.buttons),
             );
         }

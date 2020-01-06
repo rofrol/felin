@@ -18,6 +18,7 @@ pub struct Text {
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
     pub scale: f32,
+    pub id: Option<String>
 }
 
 impl Default for Text {
@@ -33,6 +34,7 @@ impl Default for Text {
             indices: Vec::new(),
             text: "".to_string(),
             scale: 1.0,
+            id: None,
         }
     }
 }
@@ -64,8 +66,13 @@ impl ElementCore for Text {
     fn get_style(&self) -> Style {
         self.style
     }
+
     fn set_style(&mut self, style: Style) {
         self.style = style;
+    }
+
+    fn get_id(&self) -> Option<String> {
+        self.id.clone()
     }
 
     fn mesh(&mut self) -> Mesh {
