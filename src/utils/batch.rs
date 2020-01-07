@@ -1,10 +1,9 @@
-use crate::definitions::{Instance, Mesh, Vertex};
+use crate::definitions::{ Mesh, Vertex};
 
 #[derive(Clone)]
 pub struct Batch {
     pub indices: Vec<u16>,
     pub vertices: Vec<Vertex>,
-    pub instances: Vec<Instance>,
 }
 
 impl Batch {
@@ -12,7 +11,6 @@ impl Batch {
         Self {
             indices: Vec::new(),
             vertices: Vec::new(),
-            instances: Vec::new(),
         }
     }
 
@@ -46,9 +44,5 @@ impl Batch {
                 self.vertices.extend(item.vertices.clone());
             }
         });
-    }
-
-    pub fn add_instances(&mut self, instance: Instance) {
-        self.instances.push(instance);
     }
 }
