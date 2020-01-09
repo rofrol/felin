@@ -24,7 +24,6 @@ pub struct Circle {
 }
 
 impl Default for Circle {
-   
     fn default() -> Self {
         Self {
             style: Style::default(),

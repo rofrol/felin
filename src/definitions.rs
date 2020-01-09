@@ -51,7 +51,7 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-pub trait ElementCore: Clone {
+pub trait ElementCore {
     type Vertex;
     fn build(&mut self);
     fn get_style(&self) -> Style;

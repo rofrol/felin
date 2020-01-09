@@ -1,9 +1,7 @@
 use felin::definitions::Vertex;
 use felin::mesh::{Grid, Image};
 use felin::prelude::*;
-use felin::utils::Batch;
-use felin::utils::Style;
-use felin::Event;
+use felin::utils::{Batch, Event, Style};
 
 #[allow(dead_code)]
 pub struct Element {
@@ -12,13 +10,43 @@ pub struct Element {
 
     left_button: Image,
     right_button: Image,
-    current_slide: i32,
+    slider: Image,
+    max_slides: i32,
 }
 
 impl Element {
+    pub fn update(&mut self, event: &Event) {
+        if self.left_button.contains(event.mouse.position) {
+            self.left_button.texture = 1;
+        } else {
+            self.left_button.texture = 0;
+        }
+
+        if self.right_button.contains(event.mouse.position) {
+            self.right_button.texture = 3;
+        } else {
+            self.right_button.texture = 2;
+        }
+
+        if self.left_button.contains(event.mouse.position) && event.mouse.on_left_click() {
+            if self.slider.texture != 0 {
+                self.slider.texture -= 1;
+            }
+        }
+
+        if self.right_button.contains(event.mouse.position) && event.mouse.on_left_click() {
+            if self.slider.texture < self.max_slides - 1 {
+                self.slider.texture += 1;
+            }
+        }
+
+        self.render();
+    }
+
     pub fn render(&mut self) {
         self.container.clear();
         self.images.clear();
+
         let mut grid = Grid {
             style: Style {
                 width: 1500.0,
@@ -30,21 +58,9 @@ impl Element {
                 ..Style::default()
             },
             children: vec![
-                self.left_button.clone(),
-                self.right_button.clone(),
-                Image {
-                    style: Style {
-                        row_start: 2,
-                        row_end: 11,
-                        column_start: 3,
-                        column_end: 10,
-                        ..Style::default()
-                    },
-                    id: Some("slide".to_string()),
-                    texture: 0,
-                    color: [1.0, 1.0, 1.0, 1.0],
-                    ..Default::default()
-                },
+                &mut self.left_button,
+                &mut self.right_button,
+                &mut self.slider,
             ],
         };
         grid.build();
@@ -62,7 +78,7 @@ impl Element {
         }
     }
 
-    pub fn new() -> Self {
+    pub fn new(max_slides: i32) -> Self {
         let left_button = Image {
             style: Style {
                 row_start: 6,
@@ -71,7 +87,7 @@ impl Element {
                 column_end: 2,
                 ..Style::default()
             },
-            texture: 1,
+            texture: 0,
             ..Default::default()
         };
 
@@ -87,12 +103,27 @@ impl Element {
             ..Default::default()
         };
 
+        let slider = Image {
+            style: Style {
+                row_start: 2,
+                row_end: 11,
+                column_start: 2,
+                column_end: 11,
+                ..Style::default()
+            },
+            id: Some("slide".to_string()),
+            texture: 0,
+            color: [1.0, 1.0, 1.0, 1.0],
+            ..Default::default()
+        };
+
         Element {
             container: Batch::new(),
             images: Batch::new(),
             left_button,
             right_button,
-            current_slide: 0,
+            slider,
+            max_slides,
         }
     }
 }

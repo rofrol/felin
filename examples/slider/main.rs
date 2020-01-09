@@ -1,4 +1,4 @@
-use felin::{app, pipeline, Base, Event, System};
+use felin::{app, pipeline, utils::Event, Base, System};
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 mod slider;
 
@@ -42,7 +42,7 @@ impl Base for Main {
             ],
         );
 
-        let slider = slider::Element::new();
+        let slider = slider::Element::new(3);
         Main {
             pipeline,
             buttons,
@@ -55,7 +55,7 @@ impl Base for Main {
         if events.resized {
             self.pipeline.resize(system);
         };
-        self.slider.render();
+        self.slider.update(events);
     }
 
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System) {
@@ -71,10 +71,10 @@ impl Base for Main {
                     load_op: wgpu::LoadOp::Clear,
                     store_op: wgpu::StoreOp::Store,
                     clear_color: wgpu::Color {
-                        r: 0.0,
-                        g: 0.0,
-                        b: 0.0,
-                        a: 0.0,
+                        r: 1.0,
+                        g: 1.0,
+                        b: 1.0,
+                        a: 1.0,
                     },
                 }],
                 depth_stencil_attachment: None,

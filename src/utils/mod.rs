@@ -1,7 +1,9 @@
 pub mod batch;
 pub mod font;
 pub mod style;
+pub mod events;
 
+pub use events::Event;
 pub use batch::Batch;
 pub use font::FontPallet;
 pub use style::Style;

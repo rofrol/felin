@@ -1,13 +1,13 @@
 pub mod definitions;
-pub mod events;
 pub mod mesh;
 pub mod pipeline;
+pub mod prelude;
 pub mod system;
 pub mod utils;
-pub mod prelude;
 
-pub use events::Event;
 pub use system::System;
+
+use crate::utils::Event;
 
 use winit::{
     event::{self, WindowEvent},

@@ -2,8 +2,8 @@ use felin::mesh::Text;
 use felin::prelude::*;
 use felin::{
     app, pipeline,
-    utils::{font::FontPallet, Style},
-    Base, Event, System,
+    utils::{font::FontPallet, Style, Event},
+    Base, System,
 };
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 
