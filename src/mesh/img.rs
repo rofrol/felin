@@ -31,17 +31,9 @@ impl Default for Image {
     }
 }
 
-impl Image {
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.vertices.clone(),
-            indices: self.indices.clone(),
-        }
-    }
-}
-
 #[allow(dead_code)]
 impl ElementCore for Image {
+    type Vertex = Vertex;
     fn build(&mut self) {
         let vertices = vec![
             //Left top corner
@@ -94,7 +86,7 @@ impl ElementCore for Image {
         self.id.clone()
     }
 
-    fn mesh(&mut self) -> Mesh {
+    fn mesh(&self) -> Mesh<Vertex> {
         Mesh {
             vertices: self.vertices.clone(),
             indices: self.indices.clone(),

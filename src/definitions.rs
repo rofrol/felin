@@ -15,9 +15,23 @@ pub struct Vertex {
 }
 
 #[derive(Debug, Clone)]
-pub struct Mesh {
-    pub vertices: Vec<Vertex>,
+pub struct Mesh<T: Clone> {
+    pub vertices: Vec<T>,
     pub indices: Vec<u16>,
+}
+
+impl<T: Clone> MeshTrait<T> for Mesh<T> {
+    fn get_indices(&mut self) -> Vec<u16> {
+        self.indices.clone()
+    }
+    fn get_vertices(&mut self) -> Vec<T> {
+        self.vertices.clone()
+    }
+}
+
+pub trait MeshTrait<T> {
+    fn get_indices(&mut self) -> Vec<u16>;
+    fn get_vertices(&mut self) -> Vec<T>;
 }
 
 #[derive(Debug)]
@@ -30,7 +44,6 @@ pub struct Texture {
     pub name: String,
 }
 
-#[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct Instance {
     pub translate: cgmath::Vector2<f32>,
@@ -38,12 +51,13 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-pub trait ElementCore {
+pub trait ElementCore: Clone {
+    type Vertex;
     fn build(&mut self);
     fn get_style(&self) -> Style;
     fn get_id(&self) -> Option<String>;
     fn set_style(&mut self, style: Style);
-    fn mesh(&mut self) -> Mesh;
+    fn mesh(&self) -> Mesh<Vertex>;
 }
 
 pub trait ElememtResizable {

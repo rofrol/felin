@@ -55,6 +55,7 @@ impl Base for Main {
         if events.resized {
             self.pipeline.resize(system);
         };
+        self.slider.render();
     }
 
     fn render(&mut self, swap_chain: &mut wgpu::SwapChain, system: &mut System) {

@@ -17,7 +17,8 @@ pub struct Rectangle {
     pub style: Style,
     pub color: [f32; 4],
     pub collider: Aabb2<f32>,
-    pub buffers: VertexBuffers<Vertex, u16>,
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
     pub id: Option<String>,
 }
 
@@ -29,29 +30,19 @@ impl Default for Rectangle {
                 min: cgmath::Point2::new(0.0, 0.0),
                 max: cgmath::Point2::new(0.0, 0.0),
             },
-            buffers: VertexBuffers::new(),
+            vertices: Vec::new(),
+            indices: Vec::new(),
             color: [1.0, 1.0, 1.0, 1.0],
             id: None,
         }
     }
 }
 
-impl Rectangle {
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.buffers.vertices.clone(),
-            indices: self.buffers.indices.clone(),
-        }
-    }
-    pub fn color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-}
-
 #[allow(dead_code)]
 impl ElementCore for Rectangle {
+    type Vertex = Vertex;
     fn build(&mut self) {
-        let mut buffers: VertexBuffers<Vertex, u16> = VertexBuffers::new();
+        let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
 
         //Draw vertices with Lyon
@@ -63,7 +54,7 @@ impl ElementCore for Rectangle {
                 self.style.height,
             ),
             &fill_options,
-            &mut BuffersBuilder::new(&mut buffers, |vertex: tessellation::FillVertex| Vertex {
+            &mut BuffersBuilder::new(&mut mesh, |vertex: tessellation::FillVertex| Vertex {
                 in_position: vertex.position.to_array(),
                 in_color: self.color,
                 tex_pos: [0.0, 0.0],
@@ -72,7 +63,8 @@ impl ElementCore for Rectangle {
         )
         .unwrap();
 
-        self.buffers = buffers;
+        self.vertices = mesh.vertices;
+        self.indices = mesh.indices;
         self.collider = self.get_collider();
     }
 
@@ -83,10 +75,10 @@ impl ElementCore for Rectangle {
         self.style = style;
     }
 
-    fn mesh(&mut self) -> Mesh {
+    fn mesh(&self) -> Mesh<Vertex> {
         Mesh {
-            vertices: self.buffers.vertices.clone(),
-            indices: self.buffers.indices.clone(),
+            vertices: self.vertices.clone(),
+            indices: self.indices.clone(),
         }
     }
 

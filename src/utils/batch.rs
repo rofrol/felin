@@ -1,12 +1,12 @@
-use crate::definitions::{ Mesh, Vertex};
+use crate::definitions::{Mesh, MeshTrait};
 
 #[derive(Clone)]
-pub struct Batch {
+pub struct Batch<T: Clone> {
     pub indices: Vec<u16>,
-    pub vertices: Vec<Vertex>,
+    pub vertices: Vec<T>,
 }
 
-impl Batch {
+impl<T: Clone> Batch<T> {
     pub fn new() -> Self {
         Self {
             indices: Vec::new(),
@@ -14,35 +14,20 @@ impl Batch {
         }
     }
 
-    pub fn add_mesh(&mut self, mesh: &Mesh) {
+    pub fn clear(&mut self) {
+        self.vertices.clear();
+        self.indices.clear();
+    }
+
+    pub fn add(&mut self, mesh: &mut Mesh<T>) {
         let new_indices: Vec<u16> = mesh
-            .indices
+            .get_indices()
             .clone()
             .iter_mut()
             .map(|indice| return (*indice as i64 + self.vertices.len() as i64) as u16)
             .collect();
 
         self.indices.extend(new_indices);
-        self.vertices.extend(mesh.vertices.clone());
-    }
-
-    pub fn add_meshes(&mut self, mesh: Vec<&Mesh>) {
-        mesh.iter().enumerate().for_each(|(index, item)| {
-            if index > 0 {
-                let last_vertice_len = mesh[index - 1].vertices.len();
-                let new_indices: Vec<u16> = item
-                    .indices
-                    .clone()
-                    .iter_mut()
-                    .map(|indice| return (*indice as i64 + last_vertice_len as i64) as u16)
-                    .collect();
-
-                self.vertices.extend(item.vertices.clone());
-                self.indices.extend(new_indices);
-            } else {
-                self.indices.extend(item.indices.clone());
-                self.vertices.extend(item.vertices.clone());
-            }
-        });
+        self.vertices.extend(mesh.get_vertices());
     }
 }

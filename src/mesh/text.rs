@@ -18,7 +18,7 @@ pub struct Text {
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
     pub scale: f32,
-    pub id: Option<String>
+    pub id: Option<String>,
 }
 
 impl Default for Text {
@@ -41,9 +41,15 @@ impl Default for Text {
 
 #[allow(dead_code)]
 impl ElementCore for Text {
+    type Vertex = Vertex;
     fn build(&mut self) {
         let font = FontPallet::get_font(&self.font);
-        let mut batch = Batch::new();
+
+        let mut batch = Batch {
+            vertices: Vec::new(),
+            indices: Vec::new(),
+        };
+
         self.last_char_position = cgmath::Vector2::new(self.style.x, self.style.y);
         for key in self.text.clone().chars() {
             let character = font.get(key);
@@ -55,8 +61,8 @@ impl ElementCore for Text {
                     cgmath::Vector2::new(self.style.x, self.last_char_position.y + 40.0);
             }
 
-            let letter = self.create_letter(uv_positions, character);
-            batch.add_mesh(&letter);
+            let mut letter = self.create_letter(uv_positions, character);
+            batch.add(&mut letter);
         }
 
         self.vertices = batch.vertices;
@@ -75,7 +81,7 @@ impl ElementCore for Text {
         self.id.clone()
     }
 
-    fn mesh(&mut self) -> Mesh {
+    fn mesh(&self) -> Mesh<Vertex> {
         Mesh {
             vertices: self.vertices.clone(),
             indices: self.indices.clone(),
@@ -84,18 +90,7 @@ impl ElementCore for Text {
 }
 
 impl Text {
-    pub fn color(&mut self, color: [f32; 4]) {
-        self.color = color;
-    }
-
-    pub fn mesh(&mut self) -> Mesh {
-        Mesh {
-            vertices: self.vertices.clone(),
-            indices: self.indices.clone(),
-        }
-    }
-
-    fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh {
+    fn create_letter(&mut self, uv: UvPosition, character: &FontBitmap) -> Mesh<Vertex> {
         let vertices = vec![
             //Left top corner
             Vertex {

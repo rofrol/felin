@@ -1,7 +1,6 @@
 use crate::definitions::{Mesh, Vertex};
 use crate::utils::Style;
 
-
 use lyon::math::*;
 use lyon::tessellation;
 use lyon::tessellation::basic_shapes::*;
@@ -19,11 +18,13 @@ pub struct Circle {
     pub style: Style,
     pub collider: Aabb2<f32>,
     pub color: [f32; 4],
-    pub buffers: VertexBuffers<Vertex, u16>,
-    pub id: Option<String>
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
+    pub id: Option<String>,
 }
 
 impl Default for Circle {
+   
     fn default() -> Self {
         Self {
             style: Style::default(),
@@ -32,15 +33,16 @@ impl Default for Circle {
                 max: cgmath::Point2::new(0.0, 0.0),
             },
             color: [1.0, 1.0, 1.0, 1.0],
-            buffers: VertexBuffers::new(),
+            vertices: Vec::new(),
+            indices: Vec::new(),
             id: None,
         }
     }
 }
 
-
 #[allow(dead_code)]
 impl ElementCore for Circle {
+    type Vertex = Vertex;
     fn build(&mut self) {
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
@@ -59,7 +61,8 @@ impl ElementCore for Circle {
         .unwrap();
 
         self.collider = self.get_collider();
-        self.buffers = mesh;
+        self.vertices = mesh.vertices;
+        self.indices = mesh.indices;
     }
 
     fn get_style(&self) -> Style {
@@ -74,14 +77,13 @@ impl ElementCore for Circle {
         self.id.clone()
     }
 
-    fn mesh(&mut self) -> Mesh {
+    fn mesh(&self) -> Mesh<Vertex> {
         Mesh {
-            vertices: self.buffers.vertices.clone(),
-            indices: self.buffers.indices.clone(),
+            vertices: self.vertices.clone(),
+            indices: self.indices.clone(),
         }
     }
 }
-
 
 impl ElementCollider for Circle {
     fn contains(&self, point: cgmath::Point2<f32>) -> bool {
@@ -100,5 +102,3 @@ impl ElementCollider for Circle {
             .transform(&transform);
     }
 }
-
-
