@@ -8,11 +8,9 @@ edition = "2018"
 
 [dependencies]
 cgmath = "*"
-glsl-to-spirv = "0.1"
+glsl-to-spirv = "*"
 image = "*"
 winit = "0.20.0-alpha4"
-rand = "0.7.0"
-froggy = "*"
 lyon = "*"
 collision = "*"
 uuid = { version = "0.7", features = ["serde", "v4"] }
