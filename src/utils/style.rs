@@ -5,13 +5,32 @@ pub enum Direction {
 }
 
 #[derive(Copy, Clone, Debug)]
+pub struct Margin {
+    pub top: f32,
+    pub bottom: f32,
+    pub left: f32,
+    pub right: f32,
+}
+
+impl Default for Margin {
+    fn default() -> Self {
+        Self {
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct Style {
     pub width: f32,
     pub height: f32,
     pub x: f32,
     pub y: f32,
     pub radius: f32,
-
+    pub margin: Margin,
     pub direction: Direction,
     pub row_gap: f32,
     pub column_gap: f32,
@@ -32,7 +51,7 @@ impl Default for Style {
             x: 0.0,
             y: 0.0,
             radius: 0.0,
-
+            margin: Margin::default(),
             direction: Direction::Horizontal,
             row_gap: 0.0,
             column_gap: 0.0,
@@ -67,11 +86,12 @@ impl Style {
 
         let width = width_column * single_column + width_column;
         let height = height_column * single_row + height_column;
+
         Style {
-            x: (single_column * child.column_start) as f32 + parent.x,
-            y: (single_row * child.row_start) as f32 + parent.y,
-            width: width as f32,
-            height: height as f32,
+            x: (single_column * child.column_start) as f32 + parent.x + child.margin.left,
+            y: (single_row * child.row_start) as f32 + parent.y + child.margin.top,
+            width: width as f32 + child.margin.right,
+            height: height as f32 + child.margin.bottom,
             ..child
         }
     }

@@ -1,7 +1,10 @@
 use felin::definitions::Vertex;
-use felin::mesh::{Grid, Image};
+use felin::mesh::{Grid, Image, Rectangle};
 use felin::prelude::*;
-use felin::utils::{Batch, Event, Style};
+use felin::utils::{
+    style::{Margin, Style},
+    Batch, Event,
+};
 
 #[allow(dead_code)]
 pub struct Element {
@@ -47,10 +50,30 @@ impl Element {
         self.container.clear();
         self.images.clear();
 
-        let mut children = vec![
+        let mut element = Rectangle {
+            style: Style {
+                rows: 1,
+                columns: 1,
+                row_start: 11,
+                row_end: 12,
+                column_start: 1,
+                column_end: 13,
+                y: 10.0,
+                margin: Margin {
+                    top: 10.0,
+                    ..Default::default()
+                },
+                ..Style::default()
+            },
+            color: [0.5, 0.5, 0.5, 0.5],
+            ..Default::default()
+        };
+
+        let mut children: Vec<&mut dyn ElementCore<Vertex = Vertex>> = vec![
             &mut self.left_button,
             &mut self.right_button,
             &mut self.slider,
+            &mut element,
         ];
 
         Grid {
@@ -97,8 +120,8 @@ impl Element {
             style: Style {
                 row_start: 6,
                 row_end: 7,
-                column_start: 11,
-                column_end: 12,
+                column_start: 12,
+                column_end: 13,
                 ..Style::default()
             },
             texture: 3,
@@ -110,7 +133,7 @@ impl Element {
                 row_start: 2,
                 row_end: 11,
                 column_start: 2,
-                column_end: 11,
+                column_end: 12,
                 ..Style::default()
             },
             id: Some("slide".to_string()),

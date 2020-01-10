@@ -2,24 +2,13 @@ use crate::definitions::{Mesh, Vertex};
 use crate::prelude::*;
 use crate::utils::Style;
 
-pub struct Grid<'a, 'b, T: ElementCore> {
+pub struct Grid<'a, 'b> {
     pub style: Style,
-    pub children: &'a mut Vec<&'b mut T>,
-}
-
-impl<'a, 'b, T: ElementCore> Grid<'a, 'b, T> {
-    fn calculate_style(parent_style: Style, children: &mut Vec<&'_ mut T>) {
-        for child in children.iter_mut() {
-            let style = Style::calculate_style(parent_style, child.get_style());
-
-            child.set_style(style);
-            child.build();
-        }
-    }
+    pub children: &'a mut Vec<&'b mut dyn ElementCore<Vertex = Vertex>>,
 }
 
 #[allow(dead_code)]
-impl<'a, 'b, T: ElementCore> ElementCore for Grid<'a, 'b, T> {
+impl<'a, 'b> ElementCore for Grid<'a, 'b> {
     type Vertex = Vertex;
 
     fn get_style(&self) -> Style {
@@ -34,9 +23,13 @@ impl<'a, 'b, T: ElementCore> ElementCore for Grid<'a, 'b, T> {
         None
     }
 
-    fn build(&mut self) -> Option<Self> {
-        Self::calculate_style(self.style.clone(), &mut self.children);
-        None
+    fn build(&mut self) {
+        for child in self.children.iter_mut() {
+            let style = Style::calculate_style(self.style, child.get_style());
+
+            child.set_style(style);
+            child.build();
+        }
     }
 
     fn mesh(&self) -> Mesh<Vertex> {

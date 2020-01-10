@@ -41,7 +41,7 @@ impl Default for Rectangle {
 #[allow(dead_code)]
 impl ElementCore for Rectangle {
     type Vertex = Vertex;
-    fn build(&mut self) -> Option<Self> {
+    fn build(&mut self) {
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
 
@@ -66,7 +66,6 @@ impl ElementCore for Rectangle {
         self.vertices = mesh.vertices;
         self.indices = mesh.indices;
         self.collider = self.get_collider();
-        Some(self.clone())
     }
 
     fn get_style(&self) -> Style {

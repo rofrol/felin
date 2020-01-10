@@ -51,9 +51,9 @@ pub struct Instance {
     pub color: [f32; 4],
 }
 
-pub trait ElementCore: Sized {
+pub trait ElementCore {
     type Vertex;
-    fn build(&mut self) -> Option<Self>;
+    fn build(&mut self);
     fn get_style(&self) -> Style;
     fn get_id(&self) -> Option<String>;
     fn set_style(&mut self, style: Style);
