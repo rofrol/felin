@@ -5,6 +5,7 @@ use felin::{
     utils::{font::FontPallet, Style, Event},
     Base, System,
 };
+
 use winit::{dpi::LogicalSize, window::WindowBuilder};
 
 pub struct Main {
@@ -17,7 +18,7 @@ impl Base for Main {
     fn init(system: &mut System) -> Self {
         system.set_window(
             WindowBuilder::new()
-                .with_title("title")
+                .with_title("Text")
                 .with_inner_size(LogicalSize {
                     width: 1500.0,
                     height: 800.0,
