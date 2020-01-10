@@ -47,7 +47,13 @@ impl Element {
         self.container.clear();
         self.images.clear();
 
-        let mut grid = Grid {
+        let mut children = vec![
+            &mut self.left_button,
+            &mut self.right_button,
+            &mut self.slider,
+        ];
+
+        Grid {
             style: Style {
                 width: 1500.0,
                 height: 1100.0,
@@ -57,16 +63,12 @@ impl Element {
                 columns: 12,
                 ..Style::default()
             },
-            children: vec![
-                &mut self.left_button,
-                &mut self.right_button,
-                &mut self.slider,
-            ],
-        };
-        grid.build();
+            children: &mut children,
+        }
+        .build();
 
         //Add the elements to differenct batches
-        for child in grid.children.iter_mut() {
+        for child in children.iter_mut() {
             match child.get_id() {
                 Some(id) => {
                     if id.contains("slide") {
