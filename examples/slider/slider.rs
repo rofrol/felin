@@ -50,32 +50,6 @@ impl Element {
         self.container.clear();
         self.images.clear();
 
-        let mut element = Rectangle {
-            style: Style {
-                rows: 1,
-                columns: 1,
-                row_start: 11,
-                row_end: 12,
-                column_start: 1,
-                column_end: 13,
-                y: 10.0,
-                margin: Margin {
-                    top: 10.0,
-                    ..Default::default()
-                },
-                ..Style::default()
-            },
-            color: [0.5, 0.5, 0.5, 0.5],
-            ..Default::default()
-        };
-
-        let mut children: Vec<&mut dyn ElementCore<Vertex = Vertex>> = vec![
-            &mut self.left_button,
-            &mut self.right_button,
-            &mut self.slider,
-            &mut element,
-        ];
-
         Grid {
             style: Style {
                 width: 1500.0,
@@ -86,21 +60,35 @@ impl Element {
                 columns: 12,
                 ..Style::default()
             },
-            children: &mut children,
+            children: &mut vec![
+                &mut self.left_button,
+                &mut self.right_button,
+                &mut self.slider,
+                &mut Rectangle {
+                    style: Style {
+                        rows: 1,
+                        columns: 1,
+                        row_start: 11,
+                        row_end: 12,
+                        column_start: 1,
+                        column_end: 13,
+                        y: 10.0,
+                        margin: Margin {
+                            top: 10.0,
+                            ..Default::default()
+                        },
+                        ..Style::default()
+                    },
+                    color: [0.5, 0.5, 0.5, 0.5],
+                    ..Default::default()
+                },
+            ],
         }
-        .build();
-
-        //Add the elements to differenct batches
-        for child in children.iter_mut() {
-            match child.get_id() {
-                Some(id) => {
-                    if id.contains("slide") {
-                        self.images.add(&mut child.mesh());
-                    }
-                }
-                None => self.container.add(&mut child.mesh()),
-            }
-        }
+        .finish()
+        .batch(&mut vec![
+            ("default".to_string(), &mut self.container),
+            ("slide".to_string(), &mut self.images),
+        ]);
     }
 
     pub fn new(max_slides: i32) -> Self {
