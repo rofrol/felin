@@ -34,7 +34,7 @@ impl Default for Image {
 #[allow(dead_code)]
 impl ElementCore for Image {
     type Vertex = Vertex;
-    fn build(&mut self) {
+    fn build(&mut self) -> Option<Self> {
         let vertices = vec![
             //Left top corner
             Vertex {
@@ -72,6 +72,8 @@ impl ElementCore for Image {
         self.indices = vec![0, 1, 2, 2, 3, 0];
         self.vertices = vertices;
         self.collider = self.get_collider();
+
+        Some(self.clone())
     }
 
     fn get_style(&self) -> Style {

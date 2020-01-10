@@ -42,7 +42,7 @@ impl Default for Circle {
 #[allow(dead_code)]
 impl ElementCore for Circle {
     type Vertex = Vertex;
-    fn build(&mut self) {
+    fn build(&mut self) -> Option<Self> {
         let mut mesh: VertexBuffers<Vertex, u16> = VertexBuffers::new();
         let fill_options = FillOptions::tolerance(0.01);
         //Draw vertices with Lyon
@@ -62,6 +62,8 @@ impl ElementCore for Circle {
         self.collider = self.get_collider();
         self.vertices = mesh.vertices;
         self.indices = mesh.indices;
+
+        Some(self.clone())
     }
 
     fn get_style(&self) -> Style {

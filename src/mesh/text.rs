@@ -42,7 +42,7 @@ impl Default for Text {
 #[allow(dead_code)]
 impl ElementCore for Text {
     type Vertex = Vertex;
-    fn build(&mut self) {
+    fn build(&mut self) -> Option<Self> {
         let font = FontPallet::get_font(&self.font);
 
         let mut batch = Batch {
@@ -67,6 +67,7 @@ impl ElementCore for Text {
 
         self.vertices = batch.vertices;
         self.indices = batch.indices;
+        Some(self.clone())
     }
 
     fn get_style(&self) -> Style {

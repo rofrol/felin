@@ -34,8 +34,9 @@ impl<'a, 'b, T: ElementCore> ElementCore for Grid<'a, 'b, T> {
         None
     }
 
-    fn build(&mut self) {
+    fn build(&mut self) -> Option<Self> {
         Self::calculate_style(self.style.clone(), &mut self.children);
+        None
     }
 
     fn mesh(&self) -> Mesh<Vertex> {
