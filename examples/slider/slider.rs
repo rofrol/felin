@@ -85,10 +85,8 @@ impl Element {
             ],
         }
         .finish()
-        .batch(&mut vec![
-            ("default".to_string(), &mut self.container),
-            ("slide".to_string(), &mut self.images),
-        ]);
+        .batch(&mut ("slide", &mut self.images))
+        .batch(&mut ("default", &mut self.container));
     }
 
     pub fn new(max_slides: i32) -> Self {

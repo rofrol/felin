@@ -52,18 +52,21 @@ impl<'a, 'b> Grid<'a, 'b> {
         self
     }
 
-    pub fn batch(&mut self, batches: &mut Vec<(String, &mut Batch<Vertex>)>) {
+    pub fn batch(&mut self, batch: &mut (&str, &mut Batch<Vertex>)) -> &mut Self {
         for child in self.children.iter_mut() {
-            match child.get_id() {
-                Some(id) => {
-                    for batch in batches.into_iter() {
-                        if id.contains(&batch.0) {
+            if batch.0 == "default" && child.get_id().is_none() {
+                batch.1.add(&mut child.mesh());
+            } else {
+                match child.get_id() {
+                    Some(id) => {
+                        if id == batch.0 {
                             batch.1.add(&mut child.mesh());
                         }
                     }
+                    None => {}
                 }
-                None => batches[0].1.add(&mut child.mesh()),
             }
         }
+        self
     }
 }

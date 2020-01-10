@@ -18,7 +18,7 @@ impl<T: Clone> Batch<T> {
         self.vertices.clear();
         self.indices.clear();
     }
-
+    //Todo can be made faster
     pub fn add(&mut self, mesh: &mut Mesh<T>) {
         let new_indices: Vec<u16> = mesh
             .get_indices()
