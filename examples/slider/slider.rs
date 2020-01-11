@@ -1,16 +1,14 @@
-use felin::definitions::Vertex;
+use felin::definitions::{Mesh, Vertex};
 use felin::mesh::{Grid, Image, Rectangle};
 use felin::prelude::*;
 use felin::utils::{
     style::{Margin, Style},
-    Batch, Event,
+    Event,
 };
 
 #[allow(dead_code)]
 pub struct Element {
-    pub container: Batch<Vertex>,
-    pub images: Batch<Vertex>,
-
+    pub container: Mesh<Vertex>,
     left_button: Image,
     right_button: Image,
     slider: Image,
@@ -47,10 +45,7 @@ impl Element {
     }
 
     pub fn render(&mut self) {
-        self.container.clear();
-        self.images.clear();
-
-        Grid {
+        let container = Grid {
             style: Style {
                 width: 1500.0,
                 height: 1100.0,
@@ -64,29 +59,59 @@ impl Element {
                 &mut self.left_button,
                 &mut self.right_button,
                 &mut self.slider,
-                &mut Rectangle {
+                &mut Grid {
                     style: Style {
-                        rows: 1,
-                        columns: 1,
+                        rows: 12,
+                        columns: 12,
                         row_start: 11,
-                        row_end: 12,
+                        row_end: 13,
                         column_start: 1,
                         column_end: 13,
-                        y: 10.0,
-                        margin: Margin {
-                            top: 10.0,
-                            ..Default::default()
-                        },
                         ..Style::default()
                     },
-                    color: [0.5, 0.5, 0.5, 0.5],
-                    ..Default::default()
+                    children: &mut vec![
+                        &mut Rectangle {
+                            style: Style {
+                                rows: 1,
+                                columns: 1,
+                                row_start: 1,
+                                row_end: 12,
+                                column_start: 1,
+                                column_end: 5,
+                                margin: Margin {
+                                    top: 10.0,
+                                    ..Default::default()
+                                },
+                                ..Style::default()
+                            },
+                            color: [0.5, 0.5, 0.5, 0.5],
+                            ..Default::default()
+                        },
+                        &mut Rectangle {
+                            style: Style {
+                                rows: 1,
+                                columns: 1,
+                                row_start: 1,
+                                row_end: 12,
+                                column_start: 6,
+                                column_end: 13,
+                                margin: Margin {
+                                    top: 10.0,
+                                    ..Default::default()
+                                },
+                                ..Style::default()
+                            },
+                            color: [0.3, 0.2, 0.5, 0.5],
+                            ..Default::default()
+                        },
+                    ],
                 },
             ],
         }
         .finish()
-        .batch(&mut ("slide", &mut self.images))
-        .batch(&mut ("default", &mut self.container));
+        .mesh();
+
+        self.container = container;
     }
 
     pub fn new(max_slides: i32) -> Self {
@@ -129,8 +154,7 @@ impl Element {
         };
 
         Element {
-            container: Batch::new(),
-            images: Batch::new(),
+            container: Mesh::default(),
             left_button,
             right_button,
             slider,

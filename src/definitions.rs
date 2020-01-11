@@ -20,6 +20,15 @@ pub struct Mesh<T: Clone> {
     pub indices: Vec<u16>,
 }
 
+impl<T: Clone> Default for Mesh<T> {
+    fn default() -> Self {
+        Self {
+            vertices: Vec::new(),
+            indices: Vec::new(),
+        }
+    }
+}
+
 impl<T: Clone> MeshTrait<T> for Mesh<T> {
     fn get_indices(&mut self) -> Vec<u16> {
         self.indices.clone()
@@ -57,17 +66,13 @@ pub trait ElementCore {
     fn get_style(&self) -> Style;
     fn get_id(&self) -> Option<String>;
     fn set_style(&mut self, style: Style);
-    fn mesh(&self) -> Mesh<Vertex>;
+    fn mesh(&mut self) -> Mesh<Vertex>;
 }
 
 pub trait ElememtResizable {
     fn width(&mut self, width: f32);
     fn height(&mut self, height: f32);
     fn radius(&mut self, radius: f32);
-}
-
-pub trait ElementImageBuild {
-    fn build(&mut self, font: &FontPallet);
 }
 
 pub trait ElementCollider {

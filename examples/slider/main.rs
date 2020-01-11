@@ -88,13 +88,13 @@ impl Base for Main {
                 Some(&self.buttons),
             );
 
-            self.pipeline.draw(
-                &mut pass,
-                &system,
-                &self.slider.images.indices,
-                &self.slider.images.vertices,
-                Some(&self.images),
-            );
+            // self.pipeline.draw(
+            //     &mut pass,
+            //     &system,
+            //     &self.slider.images.indices,
+            //     &self.slider.images.vertices,
+            //     Some(&self.images),
+            // );
         }
         system.queue.submit(&[encoder.finish()]);
     }

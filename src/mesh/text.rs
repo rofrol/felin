@@ -81,7 +81,7 @@ impl ElementCore for Text {
         self.id.clone()
     }
 
-    fn mesh(&self) -> Mesh<Vertex> {
+    fn mesh(&mut self) -> Mesh<Vertex> {
         Mesh {
             vertices: self.vertices.clone(),
             indices: self.indices.clone(),

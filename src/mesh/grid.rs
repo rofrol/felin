@@ -23,19 +23,21 @@ impl<'a, 'b> ElementCore for Grid<'a, 'b> {
         None
     }
 
-    fn build(&mut self) {
+    fn build(&mut self) {}
+
+    fn mesh(&mut self) -> Mesh<Vertex> {
+        let mut batch: Batch<Vertex> = Batch::new();
+        
         for child in self.children.iter_mut() {
             let style = Style::calculate_style(self.style, child.get_style());
-
             child.set_style(style);
             child.build();
+            batch.add(&mut child.mesh())
         }
-    }
 
-    fn mesh(&self) -> Mesh<Vertex> {
         Mesh {
-            vertices: Vec::new(),
-            indices: Vec::new(),
+            vertices: batch.vertices,
+            indices: batch.indices,
         }
     }
 }
@@ -49,24 +51,6 @@ impl<'a, 'b> Grid<'a, 'b> {
             child.build();
         }
 
-        self
-    }
-
-    pub fn batch(&mut self, batch: &mut (&str, &mut Batch<Vertex>)) -> &mut Self {
-        for child in self.children.iter_mut() {
-            if batch.0 == "default" && child.get_id().is_none() {
-                batch.1.add(&mut child.mesh());
-            } else {
-                match child.get_id() {
-                    Some(id) => {
-                        if id == batch.0 {
-                            batch.1.add(&mut child.mesh());
-                        }
-                    }
-                    None => {}
-                }
-            }
-        }
         self
     }
 }

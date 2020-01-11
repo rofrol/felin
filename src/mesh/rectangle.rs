@@ -75,7 +75,7 @@ impl ElementCore for Rectangle {
         self.style = style;
     }
 
-    fn mesh(&self) -> Mesh<Vertex> {
+    fn mesh(&mut self) -> Mesh<Vertex> {
         Mesh {
             vertices: self.vertices.clone(),
             indices: self.indices.clone(),

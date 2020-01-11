@@ -18,16 +18,13 @@ impl<T: Clone> Batch<T> {
         self.vertices.clear();
         self.indices.clear();
     }
-    //Todo can be made faster
-    pub fn add(&mut self, mesh: &mut Mesh<T>) {
-        let new_indices: Vec<u16> = mesh
-            .get_indices()
-            .clone()
-            .iter_mut()
-            .map(|indice| return (*indice as i64 + self.vertices.len() as i64) as u16)
-            .collect();
 
-        self.indices.extend(new_indices);
+    pub fn add(&mut self, mesh: &mut Mesh<T>) {
+        for indice in mesh.get_indices() {
+            self.indices
+                .push((indice as i64 + self.vertices.len() as i64) as u16);
+        }
+
         self.vertices.extend(mesh.get_vertices());
     }
 }
