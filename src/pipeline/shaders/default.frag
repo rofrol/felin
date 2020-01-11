@@ -13,8 +13,6 @@ void main() {
 
     if (layer_index >= 0) {
         o_target = texture(sampler2DArray(in_texture, s_color), vec3(uv_cords, layer_index));
-       
-        // o_target =  vec4(in_color.rgb, texture(sampler2DArray(in_texture, s_color), vec3(uv_cords, layer_index)));
     } else {
         o_target = in_color;
     }

@@ -27,7 +27,6 @@ impl<'a, 'b> ElementCore for Grid<'a, 'b> {
 
     fn mesh(&mut self) -> Mesh<Vertex> {
         let mut batch: Batch<Vertex> = Batch::new();
-        
         for child in self.children.iter_mut() {
             let style = Style::calculate_style(self.style, child.get_style());
             child.set_style(style);

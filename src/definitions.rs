@@ -1,4 +1,3 @@
-use crate::utils::font::FontPallet;
 use crate::utils::Style;
 use collision::Aabb2;
 

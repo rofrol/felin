@@ -5,7 +5,6 @@ mod slider;
 pub struct Main {
     pipeline: pipeline::default::Pipeline,
     buttons: wgpu::BindGroup,
-    images: wgpu::BindGroup,
     slider: slider::Element,
 }
 
@@ -46,7 +45,6 @@ impl Base for Main {
         Main {
             pipeline,
             buttons,
-            images,
             slider,
         }
     }
@@ -87,14 +85,6 @@ impl Base for Main {
                 &self.slider.container.vertices,
                 Some(&self.buttons),
             );
-
-            // self.pipeline.draw(
-            //     &mut pass,
-            //     &system,
-            //     &self.slider.images.indices,
-            //     &self.slider.images.vertices,
-            //     Some(&self.images),
-            // );
         }
         system.queue.submit(&[encoder.finish()]);
     }

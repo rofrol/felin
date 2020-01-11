@@ -41,11 +41,11 @@ impl Element {
             }
         }
 
-        self.render();
+        self.container = self.render();
     }
 
-    pub fn render(&mut self) {
-        let container = Grid {
+    pub fn render(&mut self) -> Mesh<Vertex> {
+        Grid {
             style: Style {
                 width: 1500.0,
                 height: 1100.0,
@@ -56,9 +56,11 @@ impl Element {
                 ..Style::default()
             },
             children: &mut vec![
+                //We can always mutate all these elements, as they are references.
                 &mut self.left_button,
                 &mut self.right_button,
                 &mut self.slider,
+                //Child grid
                 &mut Grid {
                     style: Style {
                         rows: 12,
@@ -76,7 +78,7 @@ impl Element {
                                 columns: 1,
                                 row_start: 1,
                                 row_end: 12,
-                                column_start: 1,
+                                column_start: 0,
                                 column_end: 5,
                                 margin: Margin {
                                     top: 10.0,
@@ -94,7 +96,7 @@ impl Element {
                                 row_start: 1,
                                 row_end: 12,
                                 column_start: 6,
-                                column_end: 13,
+                                column_end: 12,
                                 margin: Margin {
                                     top: 10.0,
                                     ..Default::default()
@@ -109,9 +111,7 @@ impl Element {
             ],
         }
         .finish()
-        .mesh();
-
-        self.container = container;
+        .mesh()
     }
 
     pub fn new(max_slides: i32) -> Self {

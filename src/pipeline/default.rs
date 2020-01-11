@@ -43,7 +43,7 @@ impl Pipeline {
                             visibility: wgpu::ShaderStage::FRAGMENT,
                             ty: wgpu::BindingType::SampledTexture {
                                 multisampled: false,
-                                dimension: wgpu::TextureViewDimension::D2,
+                                dimension: wgpu::TextureViewDimension::D2Array,
                             },
                         },
                         wgpu::BindGroupLayoutBinding {
